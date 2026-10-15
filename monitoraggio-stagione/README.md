@@ -3,7 +3,7 @@
 Allenamenti, presenze (vasca e palestra), carichi di lavoro (sRPE, ACWR, monotonia), zone A1–C2
 e di Maglischo, lavori per gruppi, settimana e stagione, gare e tempi della squadra di nuoto.
 
-**Sito:** https://paolodepasquale.github.io/monitoraggio-stagione/
+**Sito:** https://paolodepasquale.github.io/monitoraggio-stagione/monitoraggio-stagione/
 
 ## Installarla come app
 - **Android (Chrome):** apri il sito → menu ⋮ → *Installa app* (o *Aggiungi a schermata Home*).

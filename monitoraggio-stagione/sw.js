@@ -1,7 +1,7 @@
 /* Service worker di Swimbrain: l'app si apre anche senza rete.
    Strategia: risponde subito con la copia in memoria e intanto la aggiorna dalla rete.
    VERSIONE cambia a ogni pubblicazione (la calcola build_github.py): le cache vecchie si cancellano. */
-const VERSIONE = 'swimbrain-300a8ed843';
+const VERSIONE = 'swimbrain-e10ed424a6';
 const FILE = ['./', './index.html', './manifest.json', './icona-180.png', './icona-192.png', './icona-512.png', './icona-512-maskable.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSIONE).then(c => c.addAll(FILE)).then(() => self.skipWaiting()));

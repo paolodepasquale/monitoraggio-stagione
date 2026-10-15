@@ -2489,8 +2489,8 @@ function vistaPeriodizzazione(M) {
   const scopo = UI.atleta && M?.per.has(UI.atleta) ? UI.atleta : '';
   const pianoOrd = DB.piano.slice().sort((a, b) => (a.settimana < b.settimana ? -1 : 1));
   const editor = editorPiano(pianoOrd);
-  const stagione = cartaStagione();
-  if (!M || M.kUltimo == null) return { html: `<div class="view-head"><h2>Periodizzazione</h2></div>${stagione}${vuotoCard('Nessuna seduta nel periodo: il confronto con il piano comparirà appena ci sono dati.')}${editor}` };
+  const stagione = cartaStagione(), monitor = cartaMonitoraggio();
+  if (!M || M.kUltimo == null) return { html: `<div class="view-head"><h2>Periodizzazione</h2></div>${monitor.html}${stagione}${vuotoCard('Nessuna seduta nel periodo: il confronto con il piano comparirà appena ci sono dati.')}${editor}`, dopo: monitor.dopo };
   const ks = M.settVis, lun = ks.map(kk => M.settimane[kk].lunedi);
   const eff = ks.map(kk => (scopo ? M.per.get(scopo).sett[kk].tot : statGruppo(M, kk).media));
   const pia = lun.map(l => pianoValore(M.piano.get(l)));
@@ -2506,6 +2506,7 @@ function vistaPeriodizzazione(M) {
 
   const html = `
     <div class="view-head"><h2>Periodizzazione</h2><span class="nota">${scopo ? esc(scopo) : 'Gruppo · media per atleta'} · ${esc(mis().nome.toLowerCase())} in ${u}</span></div>
+    ${monitor.html}
     ${stagione}
     <section class="card">${cardHead('Carico pianificato ed effettivo per microciclo', 'aderenza', 'Le fasce colorate indicano la fase del piano. Per vedere un solo atleta usa il filtro Atleta.')}
       <div class="grafico" id="gPer"></div>
@@ -2520,6 +2521,7 @@ function vistaPeriodizzazione(M) {
     ${editor}`;
 
   const dopo = () => {
+    monitor.dopo();
     const bande = bandeFasi(lun, M.piano);
     grafico($('#gPer'), {
       titolo: 'Pianificato ed effettivo', altezza: 280, categorie: lun, etichettaX: i => etichettaSett(lun[i]), bande, fmtY: mis().fmtAsse,
@@ -3736,6 +3738,139 @@ function azioneSettimana(az, b) {
   else if (az === 's-giorno') { apriGiorno(b.dataset.d); return; }
   else if (az === 's-apri') { UI.settimana = b.dataset.lun; UI.tab = 'settimana'; window.scrollTo({ top: 0 }); }
   render();
+}
+
+/* ---- Monitoraggio della stagione (in Periodizzazione): colonne settimanali e previsione ---- */
+// Colonne: quanto la squadra ha fatto ogni settimana (media per atleta) e quanto è già programmato.
+// Trattini: il piano. Linea tratteggiata: la previsione per le settimane che vengono:
+//   – dove c'è il piano: piano × realizzazione recente (svolto ÷ piano delle ultime 4 settimane concluse);
+//   – oltre il piano: tendenza delle ultime 8 settimane, con aumenti al massimo del 10 % a settimana.
+// I «salti» sono le settimane del piano che crescono più del 10 % sulla precedente.
+const SALTO_PIANO = 0.10, ORIZZONTE_PREVISIONE = 8;
+function settimaneMonitoraggio() {
+  const oggi = oggiStr(), lunOggi = lunedi(oggi), ua = UI.misura === 'ua';
+  const conPiano = DB.piano.filter(p => (ua ? p.ua : p.metri) > 0).map(p => p.settimana);
+  const conDati = [...DB.allenamenti.map(a => lunedi(a.data)), ...DB.sedute.map(s => lunedi(s.data))];
+  const tutte = [...conPiano, ...conDati].sort();
+  if (!tutte.length) return [];
+  let fine = tutte[tutte.length - 1];
+  // stagione in corso (dati nelle ultime 4 settimane): si guarda avanti di qualche settimana
+  if (conDati.some(l => l >= addDays(lunOggi, -28)) && fine < addDays(lunOggi, 7 * ORIZZONTE_PREVISIONE)) fine = addDays(lunOggi, 7 * ORIZZONTE_PREVISIONE);
+  const out = [];
+  for (let l = tutte[0]; l <= fine && out.length < 60; l = addDays(l, 7)) out.push(l);
+  return out;
+}
+function datiMonitoraggio() {
+  const oggi = oggiStr(), ua = UI.misura === 'ua', lun = settimaneMonitoraggio();
+  const piano = mappaPiano();
+  const W = lun.map(l => {
+    const fine = addDays(l, 6), pl = piano.get(l);
+    const w = { l, fine, fase: pl?.fase || '', piano: pianoValore(pl), conclusa: fine < oggi, corrente: l <= oggi && oggi <= fine };
+    if (!ua) {
+      const d = datiSettimana(l);
+      w.S = d.S; w.Pr = d.Pr; w.svolto = d.S.metri; w.prog = d.Pr.metri;
+    } else {
+      // carico interno: sRPE medio per atleta (tra chi si è allenato) e carico previsto degli allenamenti da fare
+      const sed = DB.sedute.filter(x => x.data >= l && x.data <= fine && UI.tipi.has(x.tipo));
+      const atl = new Set(sed.map(x => x.atleta));
+      w.svolto = atl.size ? somma(sed.map(x => uaSeduta(x) || 0)) / atl.size : 0;
+      w.prog = somma(DB.allenamenti.filter(a => a.data >= l && a.data <= fine && !eSvolto(a) && UI.tipi.has(a.tipo)).map(a => (uaPrevista(a) || 0) * quotaRosa(a)));
+      w.metri = datiSettimana(l).S.metri; w.pianoMetri = pl?.metri || null;   // per prevedere il carico interno dal piano in metri
+    }
+    return w;
+  });
+  // realizzazione del piano nelle ultime 4 settimane concluse
+  const concluse = W.filter(w => w.conclusa && w.svolto > 0);
+  const confronto = concluse.filter(w => w.piano > 0).slice(-4);
+  const sp = somma(confronto.map(w => w.piano)), ss = somma(confronto.map(w => w.svolto));
+  const r = sp > 0 ? Math.min(1.3, Math.max(0.5, ss / sp)) : 1;
+  // carico interno senza piano in UA: piano in metri × realizzazione in metri × UA per metro delle ultime settimane
+  let kUA = null, rM = 1;
+  if (ua) {
+    const ref = concluse.filter(w => w.metri > 0).slice(-4);
+    if (ref.length) kUA = somma(ref.map(w => w.svolto)) / somma(ref.map(w => w.metri));
+    const cm = ref.filter(w => w.pianoMetri > 0);
+    if (cm.length) rM = Math.min(1.3, Math.max(0.5, somma(cm.map(w => w.metri)) / somma(cm.map(w => w.pianoMetri))));
+  }
+  // tendenza (minimi quadrati) delle ultime 8 settimane concluse
+  const base = concluse.slice(-8).map(w => ({ x: W.indexOf(w), y: w.svolto }));
+  let tend = null;
+  if (base.length >= 3) {
+    const mx = media(base.map(p => p.x)), my = media(base.map(p => p.y));
+    const sxx = somma(base.map(p => (p.x - mx) ** 2)), sxy = somma(base.map(p => (p.x - mx) * (p.y - my)));
+    const b = sxx ? sxy / sxx : 0;
+    tend = x => my + b * (x - mx);
+  }
+  // previsione dalla settimana in corso in avanti
+  const iUltima = concluse.length ? W.indexOf(concluse[concluse.length - 1]) : -1;
+  let prec = iUltima >= 0 ? W[iUltima].svolto : null;
+  W.forEach((w, i) => {
+    if (w.conclusa) return;
+    if (w.piano > 0) { w.prev = w.piano * r; w.fonte = 'piano'; }
+    else if (ua && kUA && w.pianoMetri > 0) { w.prev = w.pianoMetri * rM * kUA; w.fonte = 'piano in metri'; }
+    else if (tend && prec != null) { w.prev = Math.max(prec * 0.8, Math.min(prec * (1 + SALTO_PIANO), Math.max(0, tend(i)))); w.fonte = 'tendenza'; }
+    else w.prev = null;
+    if (w.prev != null) prec = w.prev;
+  });
+  // salti di carico del piano
+  W.forEach((w, i) => { const pp = W[i - 1]?.piano; w.salto = w.piano > 0 && pp > 0 && w.piano > pp * (1 + SALTO_PIANO) ? w.piano / pp - 1 : null; });
+  return { W, r, iUltima, confronto: confronto.length, tend: !!tend, kUA, rM };
+}
+function cartaMonitoraggio() {
+  const D = datiMonitoraggio(), { W } = D;
+  if (!W.length) return { html: '', dopo: () => {} };
+  const f = mis().fmt, u = mis().unita, ua = UI.misura === 'ua';
+  const ult = W.filter(w => w.conclusa && w.svolto > 0).slice(-4), mUlt = ult.length ? media(ult.map(w => w.svolto)) : null;
+  const futuro = W.filter(w => !w.conclusa && w.prev != null), pross = futuro.slice(0, 4), mPross = pross.length ? media(pross.map(w => w.prev)) : null;
+  const picco = futuro.reduce((m, w) => (!m || w.prev > m.prev ? w : m), null);
+  const incr = mUlt && mPross != null ? (mPross / mUlt - 1) * 100 : null;
+  const salti = W.filter(w => w.salto != null && !w.conclusa);
+  const sintesi = `<div class="kpi-strip">
+    ${kpi('Ultime 4 settimane', null, mUlt == null ? '—' : f(mUlt), mUlt == null ? '' : u, 'media settimanale per atleta')}
+    ${kpi('Prossime 4 · previsione', null, mPross == null ? '—' : f(mPross), mPross == null ? '' : u, incr == null ? 'servono dati o piano' : `<b class="${incr > 30 ? 'peggio' : ''}">${incr >= 0 ? '▲' : '▼'} ${perc(incr, 0)}</b> sulle ultime 4`)}
+    ${kpi('Picco previsto', null, picco ? f(picco.prev) : '—', picco ? u : '', picco ? `settimana del ${fmtData(picco.l)}${mUlt ? ` · ${perc((picco.prev / mUlt - 1) * 100, 0)}` : ''}` : 'nessuna previsione')}
+    ${D.confronto || !(ua && D.kUA) ? kpi('Realizzazione del piano', null, D.confronto ? num(D.r * 100) : '—', D.confronto ? '%' : '', D.confronto ? `svolto ÷ piano, ultime ${D.confronto} settimane` : 'nessuna settimana conclusa con piano')
+      : kpi('Realizzazione del piano', null, num(D.rM * 100), '%', 'in metri (il piano non ha le UA)')}
+  </div>`;
+  const note = [
+    salti.length ? `<b>Salti nel piano</b> (oltre +${SALTO_PIANO * 100} % sulla settimana prima): ${salti.slice(0, 5).map(w => `${fmtData(w.l)} <b class="peggio">${perc(w.salto * 100, 0)}</b>`).join(' · ')}${salti.length > 5 ? ` e altre ${salti.length - 5}` : ''}.` : '',
+    incr != null && incr > 30 ? 'La previsione sale di oltre il 30 % sulle ultime 4 settimane: valuta una progressione più graduale.' : '',
+    futuro.some(w => w.fonte === 'piano in metri') ? `Il piano non ha il carico in UA: la previsione usa i metri del piano × ${num(D.kUA, 2)} UA per metro (rapporto delle ultime settimane).` : '',
+    futuro.some(w => w.fonte === 'tendenza') ? `Oltre la fine del piano la previsione segue la tendenza delle ultime settimane (al massimo +${SALTO_PIANO * 100} % a settimana): aggiungi il piano in Periodizzazione per una previsione più precisa.` : '',
+  ].filter(Boolean).map(t => `<p class="nota-piccola" style="margin:6px 0 0">${t}</p>`).join('');
+  const html = `<section class="card" id="cartaMonitoraggio">${cardHead('Monitoraggio della stagione', null, `Colonne: ${ua ? 'carico interno (sRPE)' : 'metri'} di ogni settimana, media per atleta. Trattini: piano. Linea tratteggiata: previsione ${D.confronto ? `(piano × ${num(D.r * 100)} % di realizzazione recente)` : '(dal piano)'}. Tocca una colonna per aprire la settimana.`)}
+    ${sintesi}<div class="grafico" id="gMonitor"></div>${note}</section>`;
+  const dopo = () => {
+    const box = $('#gMonitor'); if (!box) return;
+    const bande = bandeFasi(W.map(w => w.l), mappaPiano());
+    const linea = W.map((w, i) => (i === D.iUltima && W.slice(i + 1).some(x => x.prev != null) ? w.svolto : w.prev ?? null));
+    const zoneUsate = ua ? [] : CONFIG.zone.filter(z => W.some(w => w.S && w.S.zone[z.key] > 0));
+    grafico(box, {
+      titolo: 'Monitoraggio della stagione', altezza: 290, categorie: W.map(w => w.l), etichettaX: i => fmtData(W[i].l), bande, fmtY: mis().fmtAsse, spazioX: 46,
+      legenda: [...(ua ? [{ label: 'Svolto', colore: '--s-blue' }] : zoneUsate.map(z => ({ label: etZ(z), colore: `--z-${z.key}` }))), { label: 'Programmato', colore: '--planned' },
+        { label: 'Piano', colore: '--ink-2', forma: 'tacca' }, { label: `Salto oltre +${SALTO_PIANO * 100} %`, colore: '--bad-ink', forma: 'tacca' }, { label: 'Previsione', colore: '--s-orange', forma: 'linea' }],
+      strati: [
+        { tipo: 'colonne', larghezza: 0.66, maxW: 30, colonne: W.map(w => [{ segs: ua
+          ? [{ v: w.svolto, c: '--s-blue' }, { v: w.prog, c: '--planned' }]
+          : [...CONFIG.zone.map(z => ({ v: w.S.zone[z.key], c: `--z-${z.key}` })), { v: Math.max(0, w.S.metri - sommaZone(w.S.zone)), c: '--bar-muted' }, { v: w.prog, c: '--planned' }] }]) },
+        { tipo: 'tacca', valori: W.map(w => (w.piano > 0 && w.salto == null ? w.piano : null)), colore: '--ink-2', larghezza: 0.8 },
+        { tipo: 'tacca', valori: W.map(w => (w.salto != null ? w.piano : null)), colore: '--bad-ink', larghezza: 0.8 },
+        { tipo: 'linea', valori: linea, colore: '--s-orange', tratteggio: true, punti: true },
+      ],
+      tooltip: i => {
+        const w = W[i], prima = W[i - 1], val = x => (x.conclusa || x.svolto > 0 ? x.svolto + x.prog : x.prev);
+        const dv = prima && val(prima) ? (val(w) / val(prima) - 1) * 100 : null;
+        return `<div class="tt-t">${fmtSettimana(w.l)}${w.fase ? ' · ' + esc(w.fase) : ''}</div>
+          ${w.svolto > 0 || w.conclusa ? rigaTT(w.conclusa ? 'Svolto' : 'Svolto finora', `${f(w.svolto)} ${u}`, ua ? '--s-blue' : '--z-B1') : ''}
+          ${w.prog ? rigaTT('Programmato', `${f(w.prog)} ${u}`, '--planned') : ''}
+          ${rigaTT('Piano', w.piano > 0 ? `${f(w.piano)} ${u}${w.salto != null ? ` (${perc(w.salto * 100, 0)})` : ''}` : '—', w.salto != null ? '--bad-ink' : '--ink-2', 'tacca')}
+          ${w.prev != null ? rigaTT(`Previsione${w.fonte === 'tendenza' ? ' (tendenza)' : w.fonte === 'piano in metri' ? ' (dal piano in metri)' : ''}`, `${f(w.prev)} ${u}`, '--s-orange', 'linea') : ''}
+          ${dv != null && Number.isFinite(dv) ? `<div class="tt-n">${perc(dv, 0)} sulla settimana prima · tocca per aprire</div>` : '<div class="tt-n">Tocca per aprire la settimana</div>'}`;
+      },
+      onClick: i => { UI.settimana = W[i].l; UI.tab = 'settimana'; render(); window.scrollTo({ top: 0 }); },
+    });
+  };
+  return { html, dopo };
 }
 
 /* ---- Stagione (in Periodizzazione): tutte le settimane del piano ---- */
@@ -5093,7 +5228,10 @@ function scollegaFoglio() {
 /* ---- sito web e link per lo staff ---- */
 // Il sito (GitHub Pages) è la stessa app: si installa sul telefono e si collega allo stesso foglio.
 // Il link per lo staff porta già l'indirizzo del foglio (dopo #, quindi non arriva al server); la parola d'ordine no.
-const SITO_WEB = 'https://paolodepasquale.github.io/monitoraggio-stagione/';
+// indirizzo del sito: quello della pagina stessa quando è aperta dal sito (anche dentro l'app Android 2.0),
+// altrimenti quello pubblicato su GitHub Pages
+const SITO_PUBBLICO = 'https://paolodepasquale.github.io/monitoraggio-stagione/monitoraggio-stagione/';
+const SITO_WEB = /^https:$/.test(location.protocol) && /github\.io$/.test(location.hostname) ? location.origin + location.pathname.replace(/[^/]*$/, '') : SITO_PUBBLICO;
 const CHIAVE_LINK = 'swimbrain-foglio-link';
 function leggiLinkStaff() {
   try {
@@ -5378,7 +5516,21 @@ function legaEventi() {
   window.addEventListener('resize', debounce(() => ridisegnaGrafici(), 150));
 }
 
+// L'app Android dalla 2.0 apre il sito: i dati che la versione precedente teneva nel telefono
+// (collegamento al foglio, copia dei dati, preferenze) arrivano dal ponte e si copiano qui una volta sola.
+// Si scrivono solo le chiavi che il sito non ha già, così non si sovrascrive niente di più recente.
+function migraDallApp() {
+  try {
+    if (!window.AndroidApp?.datiMigrati || !/^https?:$/.test(location.protocol)) return;
+    const testo = window.AndroidApp.datiMigrati();
+    if (!testo) return;
+    const o = JSON.parse(testo);
+    for (const [k, v] of Object.entries(o)) if (typeof v === 'string' && localStorage.getItem(k) == null) localStorage.setItem(k, v);
+    window.AndroidApp.migrazioneFatta?.();
+  } catch (e) { /* niente da migrare */ }
+}
 async function avvia() {
+  if (!(window.claude && typeof window.claude.use === 'function')) migraDallApp();   // prima delle preferenze
   caricaPrefs();
   legaEventi();
   const inClaude = !!(window.claude && typeof window.claude.use === 'function');

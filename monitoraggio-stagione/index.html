@@ -655,6 +655,23 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
 .chip-div { font: 600 11px/1 var(--font-cond); text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); }
 .link-giorno { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 
+/* ---------- gare di più giorni e gara come allenamento ---------- */
+.sez-gara { border-left: 4px solid var(--warn); }
+.passo.gara { background: var(--warn); color: #1a1a1a; }
+.gara-card .gara-giorno { display: inline-block; vertical-align: middle; margin-left: 6px; padding: 2px 9px; border-radius: 999px; background: var(--warn-soft); font: 600 12.5px var(--font); letter-spacing: 0.02em; text-transform: none; color: var(--ink); }
+.gara-card .tempo { font: 600 15px var(--font-cond); }
+.tab-gara-g td { vertical-align: top; }
+.tab-gara-g td:nth-child(2) { white-space: normal; min-width: 180px; }
+.tab-gare tr.riga-giorno th { text-align: left; padding-top: 14px; font: 600 14px var(--font-cond); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); border-bottom: 1px solid var(--line); }
+.tab-gare tr.iscr td { color: var(--ink-2); }
+.carico-gara { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+.carico-gara summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+.chip-div.gara { color: var(--warn-ink); }
+.rosa-az { display: inline-flex; align-items: center; gap: 6px; }
+.rosa-nome { flex-wrap: wrap; gap: 6px; }
+.rosa-nome input { flex: 1 1 200px; min-width: 0; }
+.rosa-nome .esito { flex-basis: 100%; }
+
 </style>
 </head>
 <body>
@@ -826,6 +843,18 @@ const CONFIG = {
   deltaRpeAlto: 1.5,         // RPE medio dell'atleta sopra il previsto di almeno 1,5
   rientroAllenamenti: 5,     // dopo un'assenza lunga, per quanti allenamenti si è "in rientro"
 
+  // Gara come allenamento specifico per chi gareggia (ogni manifestazione può cambiarli). Il conto vale
+  // per ogni mezza giornata di gare (mattino, pomeriggio): riscaldamento + gare + defaticamento
+  gara: {
+    riscaldamento: 1500,                              // m prima delle gare della mezza giornata
+    zoneRiscaldamento: { A1: 0.65, A2: 0.25, C2: 0.10 }, // con qualche partenza e passaggio a ritmo
+    defaticamento: 500,                               // m a fine mezza giornata, in A1
+    durataBase: 60, durataPerGara: 10,                // min per mezza giornata: riscaldamento e defaticamento, più ogni gara
+    rpe: 8,                                           // RPE (CR-10) prevista della giornata di gara
+    zonaDistanza: [{ max: 50, zona: 'C2' }, { max: 200, zona: 'C1' }, { max: Infinity, zona: 'B2' }],
+    maxGiorni: 10,                                    // durata massima di una manifestazione
+  },
+
   giorniPalestra: [1, 3],    // martedì e giovedì (lunedì = 0): appello in palestra, separato da quello in vasca
   presenzaMinima: 75,        // % sotto cui un atleta viene segnalato
   assenzeInFila: 3,          // allenamenti consecutivi saltati da segnalare
@@ -839,7 +868,7 @@ const CONFIG = {
 // Spiegazioni di una riga (tooltip "i")
 const TIP = {
   ua: 'sRPE di Foster: RPE (scala CR-10) × durata in minuti, sommata su tutte le sedute.',
-  metri: 'Volume nuotato: somma dei metri di sedute in acqua, gare e test.',
+  metri: 'Volume nuotato: somma dei metri di sedute in acqua, gare (riscaldamento, gare e defaticamento) e test.',
   delta: 'Variazione del carico rispetto al microciclo precedente.',
   acwr: `Carico recente (EWMA ${CONFIG.ewmaAcuto} gg) ÷ carico abituale (EWMA ${CONFIG.ewmaCronico} gg), media del microciclo: indica la tendenza del carico, non il rischio di infortunio.`,
   acwrGiorno: `Rapporto giornaliero EWMA ${CONFIG.ewmaAcuto}/${CONFIG.ewmaCronico}: scende nei giorni di riposo, per questo la tabella usa la media del microciclo.`,
@@ -865,7 +894,7 @@ const TIP = {
   rpePrevisto: 'RPE (CR-10) che ti aspetti per la seduta: serve a stimare il carico proposto (durata × RPE previsto).',
   scala: `Carico svolto ÷ carico proposto negli ultimi ${CONFIG.finestraValutazione} giorni. Le assenze abbassano il valore; RPE più alte del previsto o sedute extra lo alzano.`,
   deltaRpe: 'Differenza media tra la RPE dichiarata dall\'atleta e quella prevista per la seduta.',
-  proposto: 'Somma dei carichi degli allenamenti svolti dalla squadra nella finestra (durata × RPE previsto, oppure metri).',
+  proposto: 'Somma dei carichi degli allenamenti svolti dalla squadra nella finestra (durata × RPE previsto, oppure metri), più le mezze giornate di gara di chi ha gareggiato.',
   statoSeduta: 'Svolto: conta già nei metri della settimana. Da fare: resta come programmato finché non lo segni svolto. I giorni passati contano sempre come svolti, quelli futuri come programmati.',
   corsia: 'Metri della squadra nella settimana: a colori i metri svolti, zona per zona; a righe quelli programmati. La linea verticale è l\'obiettivo del piano.',
   caricoSquadra: 'Metri degli ultimi 7 giorni ÷ media settimanale degli ultimi 28 giorni. È la versione semplice del rapporto acuto:cronico, calcolata sui metri proposti alla squadra; il valore per atleta (EWMA) è in Gruppo e Atleta.',
@@ -1027,7 +1056,11 @@ const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = se
 //   blocchi:[{ parte, desc (una serie per riga), partenza, stile e zona predefiniti, v:2 }] }
 //   (i blocchi della prima versione avevano anche giri, rip, dist: si leggono ancora)
 //   → ogni presente riceve una seduta collegata (allenamentoId); RPE stimata finché l'atleta non la dichiara
-// Gare: manifestazioni [{ id, data, nome, luogo, vasca }] e risultati [{ id, manifId, atleta, gara, tempo (s), posizione, note }]
+// Gare: manifestazioni [{ id, data, fine (ultimo giorno, se dura più giorni), nome, luogo, vasca,
+//   risc, defat, rpe (facoltativi: carico della gara diverso da CONFIG.gara) }]
+//   e risultati [{ id, manifId, data (giorno della gara), fascia (mezza giornata: Mattino | Pomeriggio),
+//   atleta, gara, tempo (s; vuoto = iscrizione), posizione, note }]
+//   → chi gareggia riceve una seduta di gara per ogni mezza giornata (allenamentoId «gara:<manifestazione>:<giorno>:<fascia>»)
 // Rimossi: atleti tolti dalla rosa (non tornano con un nuovo import del file presenze)
 const dbVuoto = () => ({ versione: 3, atleti: [], sedute: [], test: [], piano: [], presenze: {}, motivi: {}, palestra: {}, allenamenti: [], manifestazioni: [], gare: [], rimossi: [], migrazioni: [], esempio: false });
 let DB = dbVuoto();
@@ -1087,7 +1120,7 @@ function leggiArchivio(chiave) {
 function datiSquadra() {
   if (typeof SYNC !== 'undefined' && SYNC.attivo && SYNC.pronto) return dbDaServer();
   const d = leggiArchivio(CONFIG.storageKey);
-  if (d) { applicaRimozioni(d); return d; }
+  if (d) { applicaRimozioni(d); applicaRinomine(d); return d; }
   const nuovo = { ...dbVuoto(), atleti: [...SQUADRA.atleti], presenze: JSON.parse(JSON.stringify(SQUADRA.presenze)) };
   const v1 = leggiArchivio(CONFIG.vecchiaKey);
   if (v1 && !v1.esempio) {
@@ -1096,6 +1129,15 @@ function datiSquadra() {
   }
   applicaRimozioni(nuovo);
   return nuovo;
+}
+// Nomi corretti dall'allenatore e inseriti nel file: applicati una sola volta (vedi rinominaAtletaIn)
+function applicaRinomine(d) {
+  for (const [da, a] of SQUADRA.rinomina || []) {
+    const id = `rinomina:${da}>${a}`;
+    if (d.migrazioni.includes(id)) continue;
+    rinominaAtletaIn(d, da, a);
+    d.migrazioni.push(id);
+  }
 }
 // Rimozioni decise dall'allenatore e inserite nel file: applicate una sola volta
 function applicaRimozioni(d) {
@@ -1134,6 +1176,35 @@ const zeriZone = () => Object.fromEntries(CONFIG.zone.map(z => [z.key, 0]));
 const uaSeduta = s => (s.rpe != null && s.durata ? s.rpe * s.durata : null);   // sRPE (Foster)
 const sommaZone = zone => CONFIG.zone.reduce((t, z) => t + (zone?.[z.key] || 0), 0);
 
+// Cambia il nome di un atleta in tutti i dati: rosa, presenze, motivi, palestra, sedute, test, gare
+// e allenamenti per alcuni atleti (nel Foglio Google la colonna la rinomina lo script, op «rinomina»)
+function rinominaAtletaIn(d, da, a) {
+  if (!da || !a || da === a) return false;
+  const sost = l => [...new Set((l || []).map(x => (x === da ? a : x)))];
+  let c = (d.atleti || []).includes(da);
+  d.atleti = sost(d.atleti);
+  for (const g in d.presenze || {}) if (d.presenze[g].includes(da)) { d.presenze[g] = sost(d.presenze[g]); c = true; }
+  for (const g in d.motivi || {}) if (da in d.motivi[g]) { d.motivi[g][a] = d.motivi[g][da]; delete d.motivi[g][da]; c = true; }
+  for (const g in d.palestra || {}) if (d.palestra[g].includes(da)) { d.palestra[g] = sost(d.palestra[g]); c = true; }
+  for (const x of [...(d.sedute || []), ...(d.test || []), ...(d.gare || [])]) if (x.atleta === da) { x.atleta = a; c = true; }
+  for (const al of d.allenamenti || []) if (Array.isArray(al.atleti) && al.atleti.includes(da)) { al.atleti = sost(al.atleti); c = true; }
+  if ((d.rimossi || []).includes(da)) { d.rimossi = sost(d.rimossi); c = true; }
+  return c;
+}
+// Atleta della rosa che corrisponde a un nome scritto altrove (file di iscrizioni, CSV):
+// uguale (senza badare a maiuscole e accenti), oppure stesso cognome con un nome che inizia allo stesso modo
+// (almeno 3 lettere, come «Giulia» e «Giuliana»), purché sia uno solo
+function atletaDaNome(nome, rosa = elencoAtleti()) {
+  const n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f']/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const t = n(nome);
+  if (!t) return null;
+  const esatto = rosa.find(r => n(r) === t);
+  if (esatto) return esatto;
+  const [cog, nom = ''] = t.split(' ');
+  if (nom.length < 3) return null;
+  const c = rosa.filter(r => { const [rc, rn = ''] = n(r).split(' '); return rc === cog && rn.slice(0, 3) === nom.slice(0, 3); });
+  return c.length === 1 ? c[0] : null;
+}
 // Toglie un atleta da rosa, presenze, motivi, sedute e test
 function togliAtletaDa(d, nome) {
   d.atleti = d.atleti.filter(a => a !== nome);
@@ -1156,7 +1227,7 @@ function elencoAtleti() {
 }
 const mappaPiano = () => new Map(DB.piano.map(p => [p.settimana, p]));
 function estremiDati() {
-  const d = [...DB.sedute.map(s => s.data), ...DB.test.map(t => t.data), ...Object.keys(DB.presenze || {}), ...(DB.allenamenti || []).map(a => a.data), ...(DB.manifestazioni || []).map(m => m.data)].sort();
+  const d = [...DB.sedute.map(s => s.data), ...DB.test.map(t => t.data), ...Object.keys(DB.presenze || {}), ...(DB.allenamenti || []).map(a => a.data), ...(DB.manifestazioni || []).flatMap(m => [m.data, fineManif(m)])].sort();
   return d.length ? { min: d[0], max: d[d.length - 1] } : null;
 }
 const faseDi = (data, piano) => piano.get(lunedi(data))?.fase || '';
@@ -1269,8 +1340,108 @@ function sincronizzaSedute(data) {
       else { Object.assign(s, base); if (s.rpeStimata) s.rpe = al.rpeTarget ?? null; }
     }
   }
-  // sedute collegate ad allenamenti spostati o cancellati
-  DB.sedute = DB.sedute.filter(s => !s.allenamentoId || s.data !== data || ids.has(s.allenamentoId));
+  // sedute collegate ad allenamenti spostati o cancellati (quelle di gara le tiene sincronizzaGare)
+  DB.sedute = DB.sedute.filter(s => !s.allenamentoId || s.data !== data || ids.has(s.allenamentoId) || eGaraId(s.allenamentoId));
+}
+
+/* ---- Gare come allenamento specifico ---- */
+// Ogni mezza giornata di gare (mattino o pomeriggio) vale come un allenamento per chi gareggia:
+// riscaldamento (1500 m), le gare (la distanza nella zona tipica della gara) e il defaticamento (500 m);
+// durata e RPE previste come una seduta. Chi gareggia mattino e pomeriggio fa due «allenamenti».
+// Le manifestazioni possono durare più giorni (fine): ogni risultato ha il suo giorno (data) e la sua mezza giornata.
+const fineManif = m => (m?.fine && m.fine > m.data ? m.fine : m?.data);
+const giorniManif = m => giorniTra(m.data, fineManif(m));
+// giorno della gara di un risultato: il suo, se cade nella manifestazione; altrimenti il primo giorno
+const giornoGara = (g, m) => (m && g.data && g.data >= m.data && g.data <= fineManif(m) ? g.data : m?.data || g.data || '');
+const FASCE_GARA = ['Mattino', 'Pomeriggio'];
+// mezza giornata di un risultato (senza indicazione: mattino); accetta anche «pom», «pm», «sera»
+const fasciaDa = v => (/^\s*(p|sera)/i.test(String(v || '')) ? 'Pomeriggio' : 'Mattino');
+const fasciaGara = g => fasciaDa(g?.fascia);
+const idGara = (mid, d, f = 'Mattino') => `gara:${mid}:${d}:${f}`;
+const eGaraId = id => String(id || '').startsWith('gara:');
+const conTempo = g => g.tempo != null && g.tempo > 0;
+function distanzaGara(gara) {
+  const t = String(gara || '').toUpperCase().trim();
+  const st = t.match(/^(\d+)\s*[X×]\s*(\d+)/);   // staffetta (4x50 SL): ognuno nuota una frazione
+  if (st) return Number(st[2]);
+  const m = t.match(/^(\d+)/);
+  return m ? Number(m[1]) : 0;
+}
+const stileGara = gara => { const s = String(gara || '').toUpperCase().match(/\b(SL|DO|RA|FA|MI|MX|MISTI)\b/)?.[1] || 'SL'; return s === 'MX' || s === 'MISTI' ? 'MI' : s; };
+const zonaGara = dist => (CONFIG.gara.zonaDistanza.find(x => dist <= x.max) || CONFIG.gara.zonaDistanza[CONFIG.gara.zonaDistanza.length - 1]).zona;
+// parametri della manifestazione (quelli scritti nella manifestazione o quelli di CONFIG.gara)
+const parGara = m => ({ risc: m?.risc ?? CONFIG.gara.riscaldamento, defat: m?.defat ?? CONFIG.gara.defaticamento, rpe: m?.rpe ?? CONFIG.gara.rpe });
+// carico di una mezza giornata di gare di un atleta (gare = i suoi risultati o iscrizioni):
+// riscaldamento + le gare + defaticamento, una volta per mezza giornata
+function caricoGara(gare, m) {
+  const p = parGara(m), zone = zeriZone(), stili = {};
+  const add = (z, st, v) => { if (!v) return; zone[z] += v; stili[st] = (stili[st] || 0) + v; };
+  // riscaldamento: diviso per zone in multipli di 50 m (quel che avanza in A1)
+  let resto = p.risc;
+  for (const [z, f] of Object.entries(CONFIG.gara.zoneRiscaldamento)) { if (z === 'A1') continue; const v = Math.round((p.risc * f) / 50) * 50; add(z, 'SL', Math.min(v, resto)); resto -= Math.min(v, resto); }
+  add('A1', 'SL', resto);
+  for (const g of gare) { const d = distanzaGara(g.gara); add(zonaGara(d), stileGara(g.gara), d); }
+  if (gare.length) add('A1', 'SL', p.defat);
+  const metri = sommaZone(zone);
+  return { metri, zone, stili, durata: CONFIG.gara.durataBase + CONFIG.gara.durataPerGara * gare.length, n: gare.length };
+}
+// Una mezza giornata di gare di una manifestazione, come un allenamento per chi gareggia (atleti):
+// per = carico di ogni atleta; manif distingue questi lavori dagli allenamenti scritti in Giornata
+function lavoroGara(m, d, fascia = 'Mattino', ris = null, sessioni = 1) {
+  ris = ris || (DB.gare || []).filter(g => g.manifId === m.id && giornoGara(g, m) === d && fasciaGara(g) === fascia);
+  const perA = new Map();
+  for (const g of ris) { if (!perA.has(g.atleta)) perA.set(g.atleta, []); perA.get(g.atleta).push(g); }
+  const giorni = giorniManif(m);
+  const per = new Map([...perA].map(([a, l]) => [a, { gare: l, ...caricoGara(l, m) }]));
+  return { id: idGara(m.id, d, fascia), manif: m, data: d, fascia, sessioni, tipo: 'gara', tipologia: 'Gara', giorno: giorni.indexOf(d) + 1, nGiorni: giorni.length,
+    atleti: [...per.keys()].sort((a, b) => a.localeCompare(b, 'it')), ris, per, rpeTarget: parGara(m).rpe };
+}
+// mezze giornate di gare di una manifestazione in un giorno (una sola, vuota, se nessuno gareggia)
+function lavoriGara(m, d) {
+  const ris = (DB.gare || []).filter(g => g.manifId === m.id && giornoGara(g, m) === d);
+  const fasce = FASCE_GARA.filter(f => ris.some(g => fasciaGara(g) === f));
+  if (!fasce.length) return [lavoroGara(m, d, 'Mattino', [], 1)];
+  return fasce.map(f => lavoroGara(m, d, f, ris.filter(g => fasciaGara(g) === f), fasce.length));
+}
+// gare in corso in un giorno (anche senza iscritti), mezza giornata per mezza giornata
+const gareGiorno = d => (DB.manifestazioni || []).filter(m => d >= m.data && d <= fineManif(m))
+  .sort((a, b) => a.nome.localeCompare(b.nome, 'it')).flatMap(m => lavoriGara(m, d));
+// svolta o da fare: i giorni passati sono svolti, quelli futuri programmati; oggi conta il tempo scritto
+function garaSvolta(x, a) {
+  const oggi = oggiStr();
+  if (x.data !== oggi) return x.data < oggi;
+  return (x.per.get(a)?.gare || []).some(conTempo);
+}
+const nomeGiornata = x => `${x.manif.nome}${x.nGiorni > 1 ? ` · ${x.giorno}° giorno di ${x.nGiorni}` : ''}${x.sessioni > 1 ? ` · ${x.fascia.toLowerCase()}` : ''}`;
+// Sedute di gara dei singoli: una per atleta e mezza giornata di gare, fino a oggi (le gare future contano già
+// nei metri programmati, come gli allenamenti da fare). RPE stimata finché l'atleta non la dichiara.
+// Torna true se ha cambiato qualcosa.
+function sincronizzaGare() {
+  const oggi = oggiStr(), voluti = new Map();
+  for (const m of DB.manifestazioni || []) for (const d of giorniManif(m)) {
+    if (d > oggi) continue;
+    for (const x of lavoriGara(m, d)) for (const [a, c] of x.per) voluti.set(`${x.id}|${a}`, { x, a, c });
+  }
+  const prima = DB.sedute.length;
+  DB.sedute = DB.sedute.filter(s => !eGaraId(s.allenamentoId) || voluti.has(`${s.allenamentoId}|${s.atleta}`));
+  let cambiato = DB.sedute.length !== prima;
+  const esistenti = new Map(DB.sedute.filter(s => eGaraId(s.allenamentoId)).map(s => [`${s.allenamentoId}|${s.atleta}`, s]));
+  for (const [k, { x, a, c }] of voluti) {
+    const base = { data: x.data, atleta: a, tipo: 'gara', durata: c.durata, metri: c.metri, zone: { ...c.zone }, attrezzi: [], note: `Gara · ${nomeGiornata(x)}`, allenamentoId: x.id, rpePrevista: x.rpeTarget };
+    const s = esistenti.get(k);
+    if (!s) { DB.sedute.push({ id: uid(), rpe: x.rpeTarget, rpeStimata: true, ...base }); cambiato = true; continue; }
+    const j = JSON.stringify(s);
+    Object.assign(s, base); if (s.rpeStimata) s.rpe = x.rpeTarget;
+    if (JSON.stringify(s) !== j) cambiato = true;
+  }
+  return cambiato;
+}
+// carico interno (UA) delle gare ancora da fare tra due date, media per atleta della rosa
+function uaGareDaFare(da, a) {
+  const r = rosaAttuale(), n = r.size || 1;
+  let t = 0;
+  for (let d = da; d <= a; d = addDays(d, 1)) for (const x of gareGiorno(d)) for (const [at, c] of x.per) if (!garaSvolta(x, at) && (!r.size || r.has(at))) t += (c.durata * x.rpeTarget) / n;
+  return t;
 }
 
 /* ---- Scala di carico individuale ---- */
@@ -1286,7 +1457,10 @@ function valutazioneCarico(fine, atleti) {
   const inizio = addDays(fine, -(CONFIG.finestraValutazione - 1));
   const metri = UI.misura === 'metri';
   const val = s => (metri ? s.metri || 0 : uaSeduta(s) || 0);
-  const sed = DB.sedute.filter(s => s.data >= inizio && s.data <= fine && UI.tipi.has(s.tipo));
+  const nella = s => s.data >= inizio && s.data <= fine && UI.tipi.has(s.tipo);
+  const sed = DB.sedute.filter(s => nella(s) && !eGaraId(s.allenamentoId));
+  // gare: allenamento specifico per chi gareggia (proposto = carico previsto della gara, svolto = la sua seduta)
+  const sedGara = DB.sedute.filter(s => nella(s) && eGaraId(s.allenamentoId));
   const giorni = giorniAllenamento().filter(g => g >= inizio && g <= fine);
   const alPerId = new Map(DB.allenamenti.map(a => [a.id, a]));
   // carico proposto di ogni giorno: dagli allenamenti registrati, altrimenti dalla media dei presenti
@@ -1321,6 +1495,16 @@ function valutazioneCarico(fine, atleti) {
     }
     // sedute extra in giorni senza allenamento di squadra
     svolto += somma(sed.filter(s => s.atleta === a && !giorni.includes(s.data)).map(val));
+    let gare = 0;
+    for (const s of sedGara) {
+      if (s.atleta !== a) continue;
+      const prev = s.rpePrevista ?? CONFIG.gara.rpe;
+      gare++;
+      if (s.rpe != null && !s.rpeStimata) dRpe.push(s.rpe - prev);
+      if (!noti.length) { proposto += 1; svolto += 1; continue; }   // scala sulle sole presenze: la gara vale un allenamento
+      proposto += metri ? s.metri || 0 : (s.durata || 0) * prev;
+      svolto += val(s);
+    }
     let inFila = 0; for (let i = seq.length - 1; i >= 0 && !seq[i]; i--) inFila++;
     // rientro: una serie di assenze lunga, seguita da pochi allenamenti
     let rientro = null;
@@ -1332,7 +1516,7 @@ function valutazioneCarico(fine, atleti) {
     }
     const ultimoMotivo = inFila ? DB.motivi?.[giorni[giorni.length - 1]]?.[a] || '' : '';
     const rapporto = proposto > 0 ? (svolto / proposto) * 100 : null;
-    return { atleta: a, allenamenti: giorni.length, presenze, proposto, svolto, rapporto, livello: livelloScala(rapporto), dRpe: dRpe.length ? media(dRpe) : null, nRpe: dRpe.length, inFila, rientro, motivi, ultimoMotivo, base };
+    return { atleta: a, allenamenti: giorni.length, presenze, gare, proposto, svolto, rapporto, livello: livelloScala(rapporto), dRpe: dRpe.length ? media(dRpe) : null, nRpe: dRpe.length, inFila, rientro, motivi, ultimoMotivo, base };
   });
 }
 function indicazioneCarico(v) {
@@ -1622,24 +1806,27 @@ function generaEsempio() {
   });
   sedute.sort((a, b) => (a.data < b.data ? -1 : a.data > b.data ? 1 : a.atleta.localeCompare(b.atleta, 'it')));
   const presenze = {};
-  for (const s of sedute) (presenze[s.data] ||= []).includes(s.atleta) || presenze[s.data].push(s.atleta);
+  for (const s of sedute) if (s.tipo !== 'gara') (presenze[s.data] ||= []).includes(s.atleta) || presenze[s.data].push(s.atleta);   // le gare non sono allenamenti
   const palestra = {};
   for (const g of Object.keys(presenze)) if (CONFIG.giorniPalestra.includes((toDate(g).getUTCDay() + 6) % 7)) palestra[g] = presenze[g].filter(() => R() < 0.85);
   // gare: un meeting prima del blocco e il campionato regionale a fine blocco
   const meeting = { id: uid(), data: '2026-01-18', nome: 'Meeting invernale', luogo: 'Novara', vasca: 50 };
-  const regionali = { id: uid(), data: '2026-03-28', nome: 'Campionato regionale di categoria', luogo: 'Torino', vasca: 50 };
+  const regionali = { id: uid(), data: '2026-03-28', fine: '2026-03-29', nome: 'Campionato regionale di categoria', luogo: 'Torino', vasca: 50 };
   const NOTE_ES = ['Partenza: reazione lenta.', 'Virate: buone, subacquee da allungare.', 'Passaggi: primo 50 troppo veloce, calo nel finale.', 'Nuotata: frequenza alta ma bracciata corta nel finale.', 'Arrivo: allungato, perde qualche centesimo.', ''];
   const gare = [];
   for (const t of test.filter(x => x.categoria === 'gara' && x.data >= '2026-03-28')) {
-    gare.push({ id: uid(), manifId: regionali.id, atleta: t.atleta, gara: t.test, tempo: t.valore, posizione: R() < 0.35 ? 1 + Math.floor(R() * 8) : null, note: NOTE_ES[Math.floor(R() * NOTE_ES.length)] });
-    if (R() < 0.8) gare.push({ id: uid(), manifId: meeting.id, atleta: t.atleta, gara: t.test, tempo: r2(t.valore * U(0.995, 1.035)), posizione: null, note: '' });
+    gare.push({ id: uid(), manifId: regionali.id, data: t.data, fascia: 'Mattino', atleta: t.atleta, gara: t.test, tempo: t.valore, posizione: R() < 0.35 ? 1 + Math.floor(R() * 8) : null, note: NOTE_ES[Math.floor(R() * NOTE_ES.length)] });
+    if (R() < 0.8 && !gare.some(g => g.manifId === meeting.id && g.atleta === t.atleta && g.gara === t.test)) gare.push({ id: uid(), manifId: meeting.id, data: meeting.data, fascia: 'Mattino', atleta: t.atleta, gara: t.test, tempo: r2(t.valore * U(0.995, 1.035)), posizione: null, note: '' });
   }
+  // le sedute di gara dei regionali (due giorni) diventano le sedute collegate alla manifestazione:
+  // metri, zone e durata li ricalcola sincronizzaGare, la RPE dichiarata resta
+  for (const s of sedute) if (s.tipo === 'gara' && s.data >= regionali.data && s.data <= regionali.fine) Object.assign(s, { allenamentoId: idGara(regionali.id, s.data, 'Mattino'), rpeStimata: false });
   return { ...dbVuoto(), atleti: atleti.map(a => a.nome), sedute, test, piano, presenze, palestra, manifestazioni: [meeting, regionali], gare, esempio: true };
 }
 
 
 /* La rosa e le presenze non sono nel codice: si caricano dal backup o dall'archivio condiviso. */
-const SQUADRA = { atleti: [], presenze: {}, rimuovi: [] };
+const SQUADRA = { atleti: [], presenze: {}, rimuovi: [], rinomina: [] };
 
 
 /* ==================== SERIE: lettura del testo di una seduta ==================== */
@@ -1900,22 +2087,42 @@ function aggiungiTot(t, x, f = 1) {
   for (const k in t.zone) t.zone[k] += (x.zone?.[k] || 0) * f;
   for (const [k, v] of Object.entries(x.stili || {})) t.stili[k] = (t.stili[k] || 0) + v * f;
 }
+// Le gare contano come allenamenti specifici per chi gareggia: carico di ognuno ÷ atleti della rosa
 function metriGiorno(d, bozza = null) {
-  const out = { svolto: totVuoto(), programmato: totVuoto(), fonte: '', n: 0 };
+  const out = { svolto: totVuoto(), programmato: totVuoto(), fonte: '', n: 0, gare: [], daSedute: null };
   const al = DB.allenamenti.filter(a => a.data === d && (!bozza || a.id !== bozza.id));
   if (bozza && bozza.data === d) al.push(bozza);
   if (al.length) {
     out.fonte = 'allenamenti';
     // allenamenti per alcuni atleti: contano per la loro quota della rosa (metri medi per atleta)
     for (const a of al) { if (a.tipo === 'secco') continue; aggiungiTot(eSvolto(a) ? out.svolto : out.programmato, totaliAllenamento(a), quotaRosa(a)); out.n++; }
-    return out;
+  } else {
+    const sed = DB.sedute.filter(s => s.data === d && s.metri > 0 && !eGaraId(s.allenamentoId));
+    if (sed.length) {
+      const f = 1 / new Set(sed.map(s => s.atleta)).size;
+      out.daSedute = totVuoto();
+      for (const s of sed) aggiungiTot(out.daSedute, { metri: s.metri, zone: s.zone }, f);
+      aggiungiTot(out.svolto, out.daSedute);
+      out.fonte = 'sedute'; out.n = 1;
+    }
   }
-  const sed = DB.sedute.filter(s => s.data === d && s.metri > 0);
-  if (!sed.length) return out;
-  const f = 1 / new Set(sed.map(s => s.atleta)).size;
-  for (const s of sed) aggiungiTot(out.svolto, { metri: s.metri, zone: s.zone }, f);
-  out.fonte = 'sedute'; out.n = 1;
+  const G = gareGiorno(d).filter(x => x.atleti.length);
+  if (G.length) {
+    const r = rosaAttuale(), n = r.size || 1;
+    for (const x of G) for (const [a, c] of x.per) if (!r.size || r.has(a)) aggiungiTot(garaSvolta(x, a) ? out.svolto : out.programmato, c, 1 / n);
+    out.gare = G;
+    if (!out.fonte) out.fonte = 'gara';
+  }
   return out;
+}
+// lavori di un giorno: allenamenti scritti e giornate di gara (con chi gareggia)
+const lavoriGiorno = d => [...DB.allenamenti.filter(a => a.data === d), ...gareGiorno(d).filter(x => x.atleti.length)];
+// aggiunge a t (svolto e programmato) un lavoro, come media sugli atleti indicati
+function aggiungiLavoro(t, al, atleti) {
+  if (!atleti.length) return;
+  if (al.manif) { for (const a of atleti) { const c = al.per.get(a); if (c) aggiungiTot(garaSvolta(al, a) ? t.svolto : t.programmato, c, 1 / atleti.length); } return; }
+  const q = atleti.filter(a => riceve(al, a)).length / atleti.length;
+  if (q) aggiungiTot(eSvolto(al) ? t.svolto : t.programmato, totaliAllenamento(al), q);
 }
 const totGiorno = g => { const t = totVuoto(); aggiungiTot(t, g.svolto); aggiungiTot(t, g.programmato); return t; };
 
@@ -3008,11 +3215,12 @@ function nuovaBozza(data, modello) {
     ],
   };
 }
-// Atleti che nessun altro lavoro del giorno (per alcuni atleti) ha già: null se non ci sono lavori a gruppi
+// Atleti che nessun altro lavoro del giorno (per alcuni atleti, o la gara) ha già: null se non ci sono lavori a gruppi
 function altriAtleti(bz) {
   const altri = DB.allenamenti.filter(a => a.data === bz.data && a.id !== bz.id && !perTutti(a));
-  if (!altri.length) return null;
-  const presi = new Set(altri.flatMap(a => a.atleti));
+  const inGara = gareGiorno(bz.data).flatMap(x => x.atleti);
+  if (!altri.length && !inGara.length) return null;
+  const presi = new Set([...altri.flatMap(a => a.atleti), ...inGara]);
   return elencoAtleti().filter(a => !presi.has(a));
 }
 const statoBase = data => (data > oggiStr() ? 'programmato' : 'svolto');
@@ -3063,7 +3271,9 @@ function vistaGiornata() {
   const pres = new Set(DB.presenze[data] || []);
   const mot = DB.motivi[data] || {};
   const allen = DB.allenamenti.filter(a => a.data === data).sort((a, b) => CONFIG.fasce.indexOf(a.fascia) - CONFIG.fasce.indexOf(b.fascia));
-  if (!UI.bozza && !allen.length && UI.bozzaChiusa !== data) UI.bozza = nuovaBozza(data);
+  const gare = gareGiorno(data), inGara = gare.some(x => x.atleti.length);
+  // giorno di gara: l'editor non si apre da solo (chi non gareggia può avere il suo allenamento con «Nuovo allenamento»)
+  if (!UI.bozza && !allen.length && !inGara && UI.bozzaChiusa !== data) UI.bozza = nuovaBozza(data);
   const nPres = atleti.filter(a => pres.has(a)).length;
   const futuro = data > oggiStr();
 
@@ -3088,7 +3298,7 @@ function vistaGiornata() {
   }).join('');
   const sez1 = `<section class="card" id="secAppello">
     <div class="card-head"><div><h3><span class="passo">1</span> Presenze della giornata</h3>
-      <p>${svolto ? `<b>${nPres} presenti</b> · ${atleti.length - nPres} assenti. Tocca un nome per cambiarlo; per gli assenti puoi indicare il motivo.` : futuro ? 'Giorno futuro: l\'appello si fa il giorno stesso. Intanto puoi programmare l\'allenamento qui sotto.' : 'Appello da fare: parti da «Tutti presenti» e poi tocca chi manca.'}</p></div>
+      <p>${svolto ? `<b>${nPres} presenti</b> · ${atleti.length - nPres} assenti. Tocca un nome per cambiarlo; per gli assenti puoi indicare il motivo.` : futuro ? 'Giorno futuro: l\'appello si fa il giorno stesso. Intanto puoi programmare l\'allenamento qui sotto.' : inGara ? 'Appello solo se chi non gareggia si allena: chi è in gara non va segnato, la gara è già la sua seduta.' : 'Appello da fare: parti da «Tutti presenti» e poi tocca chi manca.'}</p></div>
       <div class="azioni">
         <button type="button" class="btn ${svolto || futuro ? '' : 'primario'}" data-action="g-tutti">Tutti presenti</button>
         <button type="button" class="btn" data-action="g-nessuno">Tutti assenti</button>
@@ -3109,7 +3319,50 @@ function vistaGiornata() {
 
   const palestra = giornoPalestra(data) ? sezionePalestra(data, atleti)
     : atleti.length ? `<p class="nota-piccola apri-pal"><button type="button" class="btn piccolo" data-action="g-pal-apri">Appello in palestra anche oggi</button></p>` : '';
-  return { html: head + sez1 + (giornoPalestra(data) ? palestra : '') + sez2 + (giornoPalestra(data) ? '' : palestra), dopo: () => aggiornaTotaliBozza() };
+  const sezGara = gare.length ? `<section class="card sez-gara" id="secGara">
+    <div class="card-head"><div><h3><span class="passo gara" aria-hidden="true">G</span> ${gare.length === 1 ? 'Gara del giorno' : 'Gare del giorno'}</h3>
+      <p>Ogni mezza giornata di gare conta come un allenamento specifico per chi gareggia: riscaldamento, le gare (ognuna nella sua zona) e il defaticamento. I metri e il carico vanno nella settimana, nella valutazione e nel monitoraggio come quelli di un allenamento.</p></div></div>
+    ${gare.map(x => cartaGara(x)).join('')}</section>` : '';
+  return { html: head + sezGara + sez1 + (giornoPalestra(data) ? palestra : '') + sez2 + (giornoPalestra(data) ? '' : palestra), dopo: () => aggiornaTotaliBozza() };
+}
+
+/* ---- giornata di gara: la scheda della gara come allenamento di chi gareggia ---- */
+const elencoGareAtleta = l => l.slice().sort((a, b) => ordineGara(a.gara) - ordineGara(b.gara)).map(g => `${esc(g.gara)} <span class="${conTempo(g) ? 'tempo' : 'muto'}">${conTempo(g) ? fmtTempo(g.tempo) : 'iscritto'}</span>`).join(' · ');
+function cartaGara(x) {
+  const m = x.manif, p = parGara(m), n = x.atleti.length, futuro = x.data > oggiStr();
+  const testa = `<div class="al-top"><h4>🏁 ${esc(m.nome)}${n ? ` <span class="gara-giorno">${x.fascia}</span>` : ''}${x.nGiorni > 1 ? ` <span class="gara-giorno">${x.giorno}° giorno di ${x.nGiorni}</span>` : ''}${n && x.atleti.some(a => !garaSvolta(x, a)) ? ' <span class="badge-prog">Programmata</span>' : ''}</h4>
+      <div class="azioni"><button type="button" class="btn piccolo" data-action="g-apri-gara" data-id="${esc(m.id)}">${n ? 'Apri in Gare' : 'Aggiungi gli atleti in Gare'}</button></div></div>
+    <p class="nota-piccola" style="margin:0">${fmtPeriodoManif(m)}${m.luogo ? ' · ' + esc(m.luogo) : ''} · vasca ${m.vasca} m</p>`;
+  if (!n) return `<article class="al-card gara-card prog">${testa}<p class="nota-piccola">Nessun atleta in gara ${x.nGiorni > 1 ? 'in questo giorno' : ''}: in Gare aggiungi i risultati o, prima della gara, le iscrizioni (gara senza tempo). Da lì la gara conta come allenamento per chi gareggia.</p></article>`;
+  const media = totVuoto(); let durata = 0, nGare = 0;
+  for (const c of x.per.values()) { aggiungiTot(media, c, 1 / n); durata += c.durata / n; nGare += c.n; }
+  const perc = media.metri ? Object.fromEntries(Object.entries(media.zone).map(([k, v]) => [k, (v / media.metri) * 100])) : null;
+  const sed = new Map(DB.sedute.filter(s => s.allenamentoId === x.id).map(s => [s.atleta, s]));
+  const conRpe = x.atleti.filter(a => sed.get(a));
+  const dichiarate = conRpe.filter(a => !sed.get(a).rpeStimata).length;
+  const righe = x.atleti.map(a => { const c = x.per.get(a); return `<tr><td class="nome-atl">${esc(a)}</td><td>${elencoGareAtleta(c.gare)}</td><td class="num">${num(c.metri)}</td><td class="num">${num(c.durata)}′</td><td class="num">${num(c.durata * x.rpeTarget)}</td></tr>`; }).join('');
+  const griglia = conRpe.map(a => {
+    const s = sed.get(a), v = s.rpeStimata ? '' : s.rpe;
+    return `<label class="rpe-riga"><span>${esc(a)}</span><select data-rpe-al="${esc(x.id)}" data-a="${esc(a)}" aria-label="RPE di ${esc(a)}">${opt('', v, `— (prevista ${x.rpeTarget})`)}${RPE_SCALA.map((y, i) => opt(i, v, y)).join('')}</select></label>`;
+  }).join('');
+  return `<article class="al-card gara-card${x.atleti.every(a => garaSvolta(x, a)) ? '' : ' prog'}">${testa}
+    <p class="dest-chip" title="${esc(x.atleti.join(', '))}"><b>Per</b> ${n} ${n === 1 ? 'atleta in gara' : 'atleti in gara'}: ${esc(x.atleti.slice(0, 6).join(', '))}${n > 6 ? ` e altri ${n - 6}` : ''}</p>
+    <div class="al-num">
+      <span><b>${num(media.metri)}</b> m per atleta</span>
+      <span><b>${num(nGare)}</b> ${nGare === 1 ? 'gara' : 'gare'}</span>
+      <span><b>${num(durata)}</b> min</span>
+      <span>RPE previsto <b>${x.rpeTarget}</b></span>
+      <span>Carico previsto <b>${num(durata * x.rpeTarget)}</b> UA per atleta</span>
+    </div>
+    ${perc ? `<div style="margin-block:8px">${barraZone(perc)}</div>${riepilogoStili(media)}` : ''}
+    <div class="tbl-wrap"><table class="tab-gara-g"><thead><tr><th>Atleta</th><th>Gare</th><th class="num">Metri</th><th class="num">Durata</th><th class="num">UA previste</th></tr></thead><tbody>${righe}</tbody></table></div>
+    <p class="nota-piccola">Come allenamento, per ogni mezza giornata: riscaldamento ${num(p.risc)} m, le gare (50 m in ${zonaGara(50)}, 100–200 m in ${zonaGara(200)}, dai 400 m in ${zonaGara(400)}), defaticamento ${num(p.defat)} m in A1; ${CONFIG.gara.durataBase}′ più ${CONFIG.gara.durataPerGara}′ per gara. Riscaldamento, defaticamento e RPE prevista si cambiano nella manifestazione.</p>
+    ${futuro ? '<p class="nota-piccola">Gara programmata: conta nei metri programmati della settimana; dal giorno della gara diventa la seduta di chi gareggia.</p>'
+      : conRpe.length ? `<details class="rpe-box" ${UI.rpeAperto === x.id ? 'open' : ''} data-rpe-box="${esc(x.id)}"><summary>RPE degli atleti <span class="rpe-conta" data-rpe-conta="${esc(x.id)}">${dichiarate}/${conRpe.length} dichiarate</span>${info('rpePrevisto')}</summary>
+      <p class="nota-piccola" style="margin-top:0">Scala CR-10, sulla mezza giornata di gara intera (riscaldamento compreso). Finché un atleta non la dichiara, si usa la RPE prevista.</p>
+      <div class="atl-top"><label class="f-riga" style="font-size:14px;color:var(--ink-2)">Uguale per tutti <select data-rpe-tutti="${esc(x.id)}" style="width:150px">${opt('', '', 'Scegli')}${RPE_SCALA.map((y, i) => opt(i, '', y)).join('')}</select></label></div>
+      <div class="rpe-griglia">${griglia}</div></details>` : ''}
+  </article>`;
 }
 
 /* ---- palestra: martedì e giovedì, appello a parte (solo presenze) ---- */
@@ -3369,6 +3622,7 @@ function azioneGiornata(az, b) {
   if (az === 'g-giorno') { cambiaGiorno(addDays(data, Number(b.dataset.delta))); return; }
   if (az === 'g-oggi') { cambiaGiorno(oggiStr()); return; }
   if (az === 'g-settimana') { UI.settimana = lunedi(data); UI.tab = 'settimana'; render(); window.scrollTo({ top: 0 }); return; }
+  if (az === 'g-apri-gara') { UI.manifSel = b.dataset.id; UI.manifForm = null; UI.garaModifica = null; UI.ultimoGiornoGara = data; UI.tab = 'gare'; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); return; }
   if (az.startsWith('g-pal')) { azionePalestra(az, b, data, atleti); return; }
   if (az === 'g-pres') {
     const a = b.dataset.a;
@@ -3457,7 +3711,7 @@ function cambioGiornata(e) {
     const s = DB.sedute.find(x => x.allenamentoId === el.dataset.rpeAl && x.atleta === el.dataset.a);
     const al = DB.allenamenti.find(x => x.id === el.dataset.rpeAl);
     if (s) {
-      if (el.value === '') { s.rpe = al?.rpeTarget ?? null; s.rpeStimata = true; } else { s.rpe = Number(el.value); s.rpeStimata = false; }
+      if (el.value === '') { s.rpe = al ? al.rpeTarget ?? null : s.rpePrevista ?? null; s.rpeStimata = true; } else { s.rpe = Number(el.value); s.rpeStimata = false; }
       salva();
       const tot = $$(`select[data-rpe-al="${el.dataset.rpeAl}"]`), n = tot.filter(x => x.value !== '').length;
       const c = $(`[data-rpe-conta="${el.dataset.rpeAl}"]`); if (c) c.textContent = `${n}/${tot.length} dichiarate`;
@@ -3504,26 +3758,33 @@ function datiSettimana(lun) {
 // Gruppi di un giorno: un elenco di atleti per ogni lavoro «solo per alcuni», più chi resta
 // se ha comunque un lavoro di tutta la squadra. Metri di un gruppo = media dei suoi atleti
 // (ognuno conta i lavori che gli spettano). null se quel giorno il lavoro non è diviso.
+// La gara è un lavoro specifico per chi gareggia: divide il giorno tra chi gareggia e chi no
+// (se gareggiano tutti è un lavoro di squadra).
 const chiaveGruppo = l => [...l].sort().join('|');
-function quotaGruppo(al, atleti) { return atleti.length ? atleti.filter(a => riceve(al, a)).length / atleti.length : 0; }
+function quotaGruppo(al, atleti) {
+  if (!atleti.length) return 0;
+  if (al.manif) return atleti.filter(a => al.per.has(a)).length / atleti.length;
+  return atleti.filter(a => riceve(al, a)).length / atleti.length;
+}
 function gruppiGiorno(d, rosa) {
-  const al = DB.allenamenti.filter(a => a.data === d);
+  const al = lavoriGiorno(d);
   const liste = [];
   for (const a of al) if (!perTutti(a)) {
     const atleti = rosa.filter(x => a.atleti.includes(x)), k = chiaveGruppo(atleti);
-    if (atleti.length && !liste.some(x => x.k === k)) liste.push({ k, atleti });
+    if (a.manif && atleti.length === rosa.length) continue;
+    const g = liste.find(x => x.k === k);
+    if (g) { if (a.manif) g.gara = true; continue; }
+    if (atleti.length) liste.push({ k, atleti, gara: !!a.manif });
   }
   if (!liste.length) return null;
   const presi = new Set(liste.flatMap(x => x.atleti)), resto = rosa.filter(x => !presi.has(x));
-  if (resto.length && al.some(perTutti)) liste.push({ k: chiaveGruppo(resto), atleti: resto, altri: true });
-  const tot = new Map(al.filter(a => a.tipo !== 'secco').map(a => [a.id, totaliAllenamento(a)]));
+  if (resto.length && al.some(a => perTutti(a) || a.manif)) liste.push({ k: chiaveGruppo(resto), atleti: resto, altri: true });
   return liste.map(x => {
-    const out = { ...x, svolto: totVuoto(), programmato: totVuoto(), secco: [] };
+    const out = { ...x, svolto: totVuoto(), programmato: totVuoto(), secco: [], gare: [] };
     for (const a of al) {
-      const q = quotaGruppo(a, x.atleti);
-      if (!q) continue;
+      if (!quotaGruppo(a, x.atleti)) continue;
       if (a.tipo === 'secco') out.secco.push(a);
-      else aggiungiTot(eSvolto(a) ? out.svolto : out.programmato, tot.get(a.id), q);
+      else { if (a.manif) out.gare.push(a); aggiungiLavoro(out, a, x.atleti); }
     }
     return out;
   });
@@ -3536,18 +3797,20 @@ function gruppiSettimana(giorni) {
   for (const g of giorni) {
     g.gruppi = gruppiGiorno(g.d, rosa);
     for (const gr of g.gruppi || []) {
-      if (!gruppi.has(gr.k)) gruppi.set(gr.k, { k: gr.k, atleti: gr.atleti, altri: gr.altri, lettera: String.fromCharCode(65 + gruppi.size), giorni: [] });
+      if (!gruppi.has(gr.k)) gruppi.set(gr.k, { k: gr.k, atleti: gr.atleti, altri: gr.altri, gara: false, lettera: String.fromCharCode(65 + gruppi.size), giorni: [] });
       gr.lettera = gruppi.get(gr.k).lettera;
+      if (gr.gara) gruppi.get(gr.k).gara = true;
       gruppi.get(gr.k).giorni.push(g.d);
     }
   }
   const lista = [...gruppi.values()];
   for (const G of lista) {
     G.perGiorno = giorni.map(g => {
-      const al = DB.allenamenti.filter(a => a.data === g.d && a.tipo !== 'secco');
+      const al = lavoriGiorno(g.d).filter(a => a.tipo !== 'secco');
       if (!al.length) return { svolto: g.svolto, programmato: g.programmato, stimato: g.fonte === 'sedute' };   // media delle sedute del giorno
-      const t = { svolto: totVuoto(), programmato: totVuoto() };
-      for (const a of al) { const q = quotaGruppo(a, G.atleti); if (q) aggiungiTot(eSvolto(a) ? t.svolto : t.programmato, totaliAllenamento(a), q); }
+      const t = { svolto: totVuoto(), programmato: totVuoto(), stimato: !!g.daSedute };
+      if (g.daSedute) aggiungiTot(t.svolto, g.daSedute);   // giorno senza allenamenti scritti: media delle sedute
+      for (const a of al) aggiungiLavoro(t, a, G.atleti);
       return t;
     });
     G.tot = totVuoto(); G.prog = totVuoto();
@@ -3594,7 +3857,7 @@ function vistaSettimana() {
   const W = datiSettimana(lun), { S, Pr, P, giorni, fine } = W;
   const target = P?.metri || 0, fatto = S.metri + Pr.metri;
   const meso = mesociclo(lun);
-  const gare = (DB.manifestazioni || []).filter(m => m.data >= lun && m.data <= fine);
+  const gare = (DB.manifestazioni || []).filter(m => m.data <= fine && fineManif(m) >= lun).sort((a, b) => (a.data < b.data ? -1 : 1));
   const corrente = lun <= oggi && oggi <= fine;
   const GR = gruppiSettimana(giorni), diviso = GR.length > 0;
 
@@ -3606,7 +3869,7 @@ function vistaSettimana() {
       ${corrente ? '' : '<button type="button" class="btn" data-action="s-oggi">Questa settimana</button>'}
     </div>
     ${meso ? `<span class="fase-chip">${esc(meso.fase)} · settimana ${meso.pos} di ${meso.n}</span>` : ''}
-    ${gare.map(m => `<span class="fase-chip gara-chip">🏁 ${esc(m.nome)} · ${fmtGiorno(m.data)}</span>`).join('')}</div>`;
+    ${gare.map(m => `<span class="fase-chip gara-chip">🏁 ${esc(m.nome)} · ${fineManif(m) > m.data ? `${fmtGiorno(m.data)} – ${fmtGiorno(fineManif(m))}` : fmtGiorno(m.data)}</span>`).join('')}</div>`;
 
   // 1. la corsia
   const manca = target - fatto;
@@ -3646,7 +3909,7 @@ function vistaSettimana() {
 
   // 4. stili nuotati (si leggono dalle serie degli allenamenti)
   const stili = percStili(S), totStili = somma(stili.map(([, v]) => v));
-  const sez4 = `<section class="card">${cardHead('Stili nuotati', null, 'Metri svolti per stile, letti dalle serie degli allenamenti.')}
+  const sez4 = `<section class="card">${cardHead('Stili nuotati', null, 'Metri svolti per stile, letti dalle serie degli allenamenti e dalle gare.')}
     ${stili.length ? `<div class="stile-barra">${stili.map(([k, v], i) => `<span style="width:${(v / totStili) * 100}%;background-color:var(${stileColore[i % stileColore.length]})" title="${esc(k)} ${num((v / totStili) * 100)} %"></span>`).join('')}</div>
       <div class="stile-righe">${stili.map(([k, v], i) => `<div><i class="sw" style="background:var(${stileColore[i % stileColore.length]})"></i><b>${esc(k)}</b><span>${num((v / totStili) * 100)} %</span><span class="muto">${num(v)} m</span></div>`).join('')}</div>`
       : `<p class="vuoto">${S.metri ? 'In questa settimana i metri vengono da sedute senza serie scritte: gli stili si leggono solo dagli allenamenti registrati in Giornata.' : 'Nessun metro svolto in questa settimana.'}</p>`}
@@ -3680,11 +3943,13 @@ function vistaSettimana() {
         const g = giorni[i];
         if (g.gruppi) return `<div class="tt-t">${GIORNI_LUNGHI[i]} ${fmtData(g.d)} · lavoro diviso</div>` + g.gruppi.map(x => {
           const m = x.svolto.metri + x.programmato.metri, zz = CONFIG.zone.filter(z => x.svolto.zone[z.key] + x.programmato.zone[z.key] >= 1).map(z => `${z.key} ${num(x.svolto.zone[z.key] + x.programmato.zone[z.key])}`).join(' · ');
-          return rigaTT(`Gruppo ${x.lettera} · ${x.atleti.length} ${x.atleti.length === 1 ? 'atleta' : 'atleti'}${x.altri ? ' (gli altri)' : ''}`, `${num(m)} m${x.programmato.metri ? ' (prog.)' : ''}`) + (zz ? `<div class="tt-n" style="margin:-2px 0 4px">${zz}${x.secco.length ? ' · + secco' : ''}</div>` : x.secco.length ? '<div class="tt-n" style="margin:-2px 0 4px">a secco</div>' : '');
+          const nota = [zz, x.gare.length ? `🏁 ${x.gare.map(nomeGiornata).join(', ')}` : '', x.secco.length ? (zz ? '+ secco' : 'a secco') : ''].filter(Boolean).join(' · ');
+          return rigaTT(`Gruppo ${x.lettera} · ${x.atleti.length} ${x.atleti.length === 1 ? 'atleta' : 'atleti'}${x.gare.length ? ' in gara' : x.altri ? ' (gli altri)' : ''}`, `${num(m)} m${x.programmato.metri ? ' (prog.)' : ''}`) + (nota ? `<div class="tt-n" style="margin:-2px 0 4px">${nota}</div>` : '');
         }).join('') + `<div class="tt-n">Media per atleta ${num(g.svolto.metri + g.programmato.metri)} m · tocca per aprire</div>`;
         const righe = CONFIG.zone.filter(z => g.svolto.zone[z.key] > 0).map(z => rigaTT(etZ(z), `${num(g.svolto.zone[z.key])} m`, `--z-${z.key}`)).join('');
         return `<div class="tt-t">${GIORNI_LUNGHI[i]} ${fmtData(g.d)}</div>${righe}${g.programmato.metri ? rigaTT('Programmati', `${num(g.programmato.metri)} m`, '--planned') : ''}${rigaTT('Totale', `${num(g.svolto.metri + g.programmato.metri)} m`)}
-          <div class="tt-n">${g.fonte === 'sedute' ? 'Media delle sedute dei presenti' : g.fonte ? `${g.n} ${g.n === 1 ? 'allenamento' : 'allenamenti'} in acqua` : 'Nessun allenamento'} · tocca per aprire</div>`;
+          ${g.gare.length ? `<div class="tt-n">🏁 ${g.gare.map(x => `${esc(nomeGiornata(x))}: ${x.atleti.length} in gara`).join(' · ')}</div>` : ''}
+          <div class="tt-n">${g.fonte === 'sedute' ? 'Media delle sedute dei presenti' : g.n ? `${g.n} ${g.n === 1 ? 'allenamento' : 'allenamenti'} in acqua` : g.gare.length ? 'Gara: carico di chi gareggia, media sulla rosa' : g.fonte ? 'Solo lavoro a secco' : 'Nessun allenamento'} · tocca per aprire</div>`;
       },
       onClick: i => apriGiorno(cat[i]),
     });
@@ -3700,12 +3965,12 @@ function cartaGruppi(GR, giorni, P) {
     if (!m) return '<td class="num muto">—</td>';
     return `<td class="num${diviso ? ' diviso' : ''}">${num(m)}${x.programmato.metri && !x.svolto.metri ? ' <small>prog.</small>' : ''}${x.stimato ? ' <small>media</small>' : ''}</td>`;
   };
-  const righe = conDati.map(({ g, i }) => `<tr><th scope="row"><button type="button" class="link-giorno" data-action="s-giorno" data-d="${g.d}">${GIORNI[i]} ${toDate(g.d).getUTCDate()}</button>${g.gruppi ? ' <span class="chip-div">diviso</span>' : ''}</th>${GR.map(G => cella(G.perGiorno[i], !!g.gruppi?.some(x => x.k === G.k))).join('')}</tr>`).join('');
+  const righe = conDati.map(({ g, i }) => `<tr><th scope="row"><button type="button" class="link-giorno" data-action="s-giorno" data-d="${g.d}">${GIORNI[i]} ${toDate(g.d).getUTCDate()}</button>${g.gare.length ? ' <span class="chip-div gara">gara</span>' : g.gruppi ? ' <span class="chip-div">diviso</span>' : ''}</th>${GR.map(G => cella(G.perGiorno[i], !!g.gruppi?.some(x => x.k === G.k))).join('')}</tr>`).join('');
   const totali = GR.map(G => `<td class="num"><b>${num(G.tot.metri + G.prog.metri)}</b></td>`).join('');
   const piano = P ? `<tr class="piano-r"><th scope="row">% del piano (${num(P.metri)} m)</th>${GR.map(G => `<td class="num">${num(((G.tot.metri + G.prog.metri) / P.metri) * 100)} %</td>`).join('')}</tr>` : '';
   const zone = `<tr class="zone-r"><th scope="row">Zone</th>${GR.map(G => { const t = totVuoto(); aggiungiTot(t, G.tot); aggiungiTot(t, G.prog); return `<td>${t.metri ? barraZone(Object.fromEntries(CONFIG.zone.map(z => [z.key, (t.zone[z.key] / t.metri) * 100])), true) : ''}</td>`; }).join('')}</tr>`;
-  const chi = GR.map(G => `<li><b class="lettera">${G.lettera}</b><span><b>${G.atleti.length} ${G.atleti.length === 1 ? 'atleta' : 'atleti'}${G.altri ? ' · gli altri' : ''}</b> · ${esc(nomiGruppo(G))}</span></li>`).join('');
-  return `<section class="card" id="cartaGruppi">${cardHead('Gruppi di lavoro', null, 'Metri di ogni gruppo, come media dei suoi atleti: nei giorni divisi ognuno ha il suo lavoro, negli altri il lavoro di tutta la squadra.')}
+  const chi = GR.map(G => `<li><b class="lettera">${G.lettera}</b><span><b>${G.atleti.length} ${G.atleti.length === 1 ? 'atleta' : 'atleti'}${G.gara ? ' · in gara' : G.altri ? ' · gli altri' : ''}</b> · ${esc(nomiGruppo(G))}</span></li>`).join('');
+  return `<section class="card" id="cartaGruppi">${cardHead('Gruppi di lavoro', null, 'Metri di ogni gruppo, come media dei suoi atleti: nei giorni divisi ognuno ha il suo lavoro, negli altri il lavoro di tutta la squadra. La gara è il lavoro di chi gareggia: riscaldamento, gare e defaticamento.')}
     <ul class="gruppi-chi">${chi}</ul>
     <div class="tbl-wrap"><table class="ztab gruppi-tab"><thead><tr><th>Giorno</th>${GR.map(G => `<th class="num" title="${esc(G.atleti.join(', '))}">Gruppo ${G.lettera}</th>`).join('')}</tr></thead>
       <tbody>${righe}</tbody>
@@ -3750,7 +4015,7 @@ const SALTO_PIANO = 0.10, ORIZZONTE_PREVISIONE = 8;
 function settimaneMonitoraggio() {
   const oggi = oggiStr(), lunOggi = lunedi(oggi), ua = UI.misura === 'ua';
   const conPiano = DB.piano.filter(p => (ua ? p.ua : p.metri) > 0).map(p => p.settimana);
-  const conDati = [...DB.allenamenti.map(a => lunedi(a.data)), ...DB.sedute.map(s => lunedi(s.data))];
+  const conDati = [...DB.allenamenti.map(a => lunedi(a.data)), ...DB.sedute.map(s => lunedi(s.data)), ...(DB.gare || []).map(g => { const m = (DB.manifestazioni || []).find(x => x.id === g.manifId); return m ? lunedi(giornoGara(g, m)) : null; }).filter(Boolean)];
   const tutte = [...conPiano, ...conDati].sort();
   if (!tutte.length) return [];
   let fine = tutte[tutte.length - 1];
@@ -3774,7 +4039,8 @@ function datiMonitoraggio() {
       const sed = DB.sedute.filter(x => x.data >= l && x.data <= fine && UI.tipi.has(x.tipo));
       const atl = new Set(sed.map(x => x.atleta));
       w.svolto = atl.size ? somma(sed.map(x => uaSeduta(x) || 0)) / atl.size : 0;
-      w.prog = somma(DB.allenamenti.filter(a => a.data >= l && a.data <= fine && !eSvolto(a) && UI.tipi.has(a.tipo)).map(a => (uaPrevista(a) || 0) * quotaRosa(a)));
+      w.prog = somma(DB.allenamenti.filter(a => a.data >= l && a.data <= fine && !eSvolto(a) && UI.tipi.has(a.tipo)).map(a => (uaPrevista(a) || 0) * quotaRosa(a)))
+        + (UI.tipi.has('gara') ? uaGareDaFare(l, fine) : 0);   // gare ancora da fare: durata × RPE prevista di chi gareggia
       w.metri = datiSettimana(l).S.metri; w.pianoMetri = pl?.metri || null;   // per prevedere il carico interno dal piano in metri
     }
     return w;
@@ -3972,7 +4238,7 @@ function vistaValutazione() {
   const freccia = c => (col === c ? `<span class="freccia" aria-hidden="true">${dir < 0 ? '▼' : '▲'}</span>` : '');
   const mostraCarichi = base !== 'presenze';
   const corpo = righe.map(v => `<tr class="${v.atleta === UI.atleta ? 'sel' : ''}">
-    <td><div class="nome-atl">${esc(v.atleta)}</div><small class="sotto">${v.presenze}/${v.allenamenti} presenze${v.inFila ? ` · <span class="peggio">assente da ${v.inFila}</span>` : ''}</small></td>
+    <td><div class="nome-atl">${esc(v.atleta)}</div><small class="sotto">${v.presenze}/${v.allenamenti} presenze${v.gare ? ` · ${v.gare} ${v.gare === 1 ? 'mezza giornata' : 'mezze giornate'} di gara` : ''}${v.inFila ? ` · <span class="peggio">assente da ${v.inFila}</span>` : ''}</small></td>
     <td class="num"><b class="rapp">${num(v.rapporto)} %</b>${mostraCarichi ? `<br><small class="sotto">${fmtCarico(v.svolto, base)} su ${fmtCarico(v.proposto, base)}</small>` : ''}</td>
     <td class="c-scala">${barraScala(v)}<div style="margin-top:6px">${chipLivello(v.livello)}</div></td>
     ${mostraCarichi ? `<td class="num">${v.dRpe == null ? '—' : `<span class="${v.dRpe >= CONFIG.deltaRpeAlto ? 'peggio' : ''}">${segno(v.dRpe, 1)}</span>`}</td>` : ''}
@@ -3998,14 +4264,16 @@ function vistaValutazione() {
 function cartaScalaAtleta(a, fine) {
   const v = valutazioneCarico(fine, [a])[0];
   if (!v.allenamenti) return '';
-  return `<section class="card">${cardHead(`Scala di carico · ultimi ${CONFIG.finestraValutazione} giorni`, 'scala', `${v.presenze}/${v.allenamenti} allenamenti · ${num(v.rapporto)} % del carico proposto`)}
+  return `<section class="card">${cardHead(`Scala di carico · ultimi ${CONFIG.finestraValutazione} giorni`, 'scala', `${v.presenze}/${v.allenamenti} allenamenti${v.gare ? ` + ${v.gare} ${v.gare === 1 ? 'mezza giornata' : 'mezze giornate'} di gara` : ''} · ${num(v.rapporto)} % del carico proposto`)}
     <div class="scala-atleta">${barraScala(v)}${chipLivello(v.livello)}</div>${legendaScala()}
     <p style="margin:8px 0 0">${esc(indicazioneCarico(v))}</p></section>`;
 }
 
 
 /* -------------------------------- GARE -------------------------------- */
-// Riepilogo delle gare: manifestazione (data, nome, luogo, vasca) → risultati (atleta, gara, tempo, note tecniche).
+// Riepilogo delle gare: manifestazione (date, nome, luogo, vasca) → risultati (giorno, atleta, gara, tempo, note tecniche).
+// Una manifestazione può durare più giorni (dal… fino al…): ogni risultato ha il suo giorno.
+// Una gara senza tempo è un'iscrizione: serve a programmare (conta come allenamento di chi gareggia).
 // Il personale si calcola da solo: miglior tempo precedente sulla stessa gara e nella stessa vasca.
 const GARE_COMUNI = ['50 SL', '100 SL', '200 SL', '400 SL', '800 SL', '1500 SL', '50 DO', '100 DO', '200 DO', '50 RA', '100 RA', '200 RA', '50 FA', '100 FA', '200 FA', '100 MI', '200 MI', '400 MI'];
 const ASPETTI_TECNICI = ['Partenza', 'Subacquee', 'Virate', 'Passaggi', 'Nuotata', 'Arrivo'];
@@ -4015,12 +4283,29 @@ const chiaveGara = (g, m) => `${g.atleta}|${g.gara}|${m.vasca}`;
 const fmtTempoIT = s => { if (s == null) return ''; const m = Math.floor(s / 60), r = (s - m * 60).toFixed(2).padStart(5, '0'); return m ? `${m}'${r.replace('.', '"')}` : r.replace(/^0/, '').replace('.', '"'); };
 const ordineGara = g => { const m = String(g).match(/^(\d+)\s*(\w+)/); const st = ['SL', 'DO', 'RA', 'FA', 'MI'].indexOf(m?.[2]); return m ? (st < 0 ? 9 : st) * 10000 + Number(m[1]) : 99999; };
 const ordManif = () => DB.manifestazioni.slice().sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : a.nome.localeCompare(b.nome, 'it')));
+const dataRis = (g, m) => giornoGara(g, m);
+// «Sabato 14 – domenica 15 dic 2026», «Sabato 31 gen – domenica 1 feb 2026» o un giorno solo
+function fmtPeriodoManif(m) {
+  const f = fineManif(m);
+  if (f === m.data) return fmtGiornoLungo(m.data);
+  const a = toDate(m.data), b = toDate(f), ga = GIORNI_LUNGHI[giornoSett(m.data)], gb = GIORNI_LUNGHI[giornoSett(f)].toLowerCase();
+  if (a.getUTCFullYear() !== b.getUTCFullYear()) return `${fmtGiornoLungo(m.data)} – ${gb} ${b.getUTCDate()} ${MESI[b.getUTCMonth()]} ${b.getUTCFullYear()}`;
+  if (a.getUTCMonth() !== b.getUTCMonth()) return `${ga} ${a.getUTCDate()} ${MESI[a.getUTCMonth()]} – ${gb} ${b.getUTCDate()} ${MESI[b.getUTCMonth()]} ${b.getUTCFullYear()}`;
+  return `${ga} ${a.getUTCDate()} – ${gb} ${b.getUTCDate()} ${MESI[b.getUTCMonth()]} ${b.getUTCFullYear()}`;
+}
+// «14–15 dic 2026» (per gli elenchi)
+function fmtPeriodoBreve(m) {
+  const f = fineManif(m), a = toDate(m.data), b = toDate(f);
+  if (f === m.data) return fmtDataAnno(m.data);
+  return a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear() ? `${a.getUTCDate()}–${fmtDataAnno(f)}` : `${fmtData(m.data)} – ${fmtDataAnno(f)}`;
+}
+const etGiornoManif = (m, d) => `${fmtGiorno(d)} (${giorniManif(m).indexOf(d) + 1}°)`;
 
 // Per ogni risultato: miglior tempo precedente (stessa gara, stessa vasca) e se è un nuovo personale
 function analisiGare() {
   const mp = manifPerId();
-  const ord = DB.gare.map((g, i) => ({ g, m: mp.get(g.manifId), i })).filter(x => x.m)
-    .sort((a, b) => (a.m.data < b.m.data ? -1 : a.m.data > b.m.data ? 1 : a.i - b.i));
+  const ord = DB.gare.filter(conTempo).map((g, i) => ({ g, m: mp.get(g.manifId), i, d: '' })).filter(x => x.m).map(x => ({ ...x, d: dataRis(x.g, x.m) }))
+    .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : a.i - b.i));
   const migliore = new Map(), out = new Map();
   for (const { g, m } of ord) {
     const k = chiaveGara(g, m), prec = migliore.get(k);
@@ -4033,7 +4318,7 @@ function analisiGare() {
 function personalBest() {
   const mp = manifPerId(), out = new Map();
   for (const g of DB.gare) {
-    const m = mp.get(g.manifId); if (!m) continue;
+    const m = mp.get(g.manifId); if (!m || !conTempo(g)) continue;
     const k = `${g.atleta}|${g.gara}`, r = out.get(k) || { 50: null, 25: null };
     if (!r[m.vasca] || g.tempo < r[m.vasca].g.tempo) r[m.vasca] = { g, m };
     out.set(k, r);
@@ -4045,7 +4330,8 @@ const VASCHE = [{ v: 50, nome: 'Vasca lunga', breve: '50 m' }, { v: 25, nome: 'V
 function cellaPB(x, idCorrente, dettaglio) {
   if (!x) return '<td class="num pb-c"><span class="muto">—</span></td>';
   const qui = x.g.id === idCorrente;
-  return `<td class="num pb-c"><b class="tempo${qui ? ' pb-qui' : ''}" title="${esc(x.m.nome)}, ${fmtData(x.m.data)} ${toDate(x.m.data).getUTCFullYear()}${qui ? ' · è questo risultato' : ''}">${fmtTempo(x.g.tempo)}</b>${qui ? '<span class="pb-segno" aria-label="è questo risultato">●</span>' : ''}${dettaglio ? `<br><small class="sotto">${esc(x.m.nome)} · ${fmtData(x.m.data)} ${toDate(x.m.data).getUTCFullYear()}</small>` : ''}</td>`;
+  const d = dataRis(x.g, x.m);
+  return `<td class="num pb-c"><b class="tempo${qui ? ' pb-qui' : ''}" title="${esc(x.m.nome)}, ${fmtDataAnno(d)}${qui ? ' · è questo risultato' : ''}">${fmtTempo(x.g.tempo)}</b>${qui ? '<span class="pb-segno" aria-label="è questo risultato">●</span>' : ''}${dettaglio ? `<br><small class="sotto">${esc(x.m.nome)} · ${fmtDataAnno(d)}</small>` : ''}</td>`;
 }
 
 function chipPersonale(a) {
@@ -4060,16 +4346,18 @@ function vistaGare() {
   const tutte = ordManif();
   if (UI.manifSel && !mp.has(UI.manifSel)) UI.manifSel = '';
   if (!UI.manifSel && tutte.length) UI.manifSel = tutte[0].id;
-  const visibile = g => { const m = mp.get(g.manifId); return m && dataVisibile(m.data, piano) && atleti.includes(g.atleta) && (!UI.atleta || g.atleta === UI.atleta); };
-  const gareVis = DB.gare.filter(visibile);
-  const manifVis = tutte.filter(m => dataVisibile(m.data, piano) && (!UI.atleta || gareVis.some(g => g.manifId === m.id)));
+  const manifVisibile = m => giorniManif(m).some(d => dataVisibile(d, piano));
+  const visibile = g => { const m = mp.get(g.manifId); return m && manifVisibile(m) && atleti.includes(g.atleta) && (!UI.atleta || g.atleta === UI.atleta); };
+  const tuttiVisibili = DB.gare.filter(visibile);
+  const gareVis = tuttiVisibili.filter(conTempo), iscrVis = tuttiVisibili.length - gareVis.length;
+  const manifVis = tutte.filter(m => manifVisibile(m) && (!UI.atleta || tuttiVisibili.some(g => g.manifId === m.id)));
   const pbVis = gareVis.filter(g => A.get(g.id)?.stato === 'pb');
   const migl = pbVis.map(g => { const a = A.get(g.id); return ((a.prec - g.tempo) / a.prec) * 100; });
 
   const head = `<div class="view-head"><h2>Gare</h2><span class="nota">${UI.atleta ? esc(UI.atleta) + ' · ' : ''}manifestazioni del periodo selezionato</span></div>`;
   const kpis = DB.gare.length ? `<div class="kpi-strip">
-    ${kpi('Manifestazioni', null, num(manifVis.length), '', manifVis[0] ? `ultima: ${esc(manifVis[0].nome)}, ${fmtData(manifVis[0].data)}` : 'nessuna nel periodo')}
-    ${kpi('Gare nuotate', null, num(gareVis.length), '', `${num(new Set(gareVis.map(g => g.atleta)).size)} atleti`)}
+    ${kpi('Manifestazioni', null, num(manifVis.length), '', manifVis[0] ? `ultima: ${esc(manifVis[0].nome)}, ${fmtPeriodoBreve(manifVis[0])}` : 'nessuna nel periodo')}
+    ${kpi('Gare nuotate', null, num(gareVis.length), '', `${num(new Set(gareVis.map(g => g.atleta)).size)} atleti${iscrVis ? ` · ${num(iscrVis)} ${iscrVis === 1 ? 'iscrizione' : 'iscrizioni'} senza tempo` : ''}`)}
     ${kpi('Personali migliorati', null, num(pbVis.length), gareVis.length ? `su ${num(gareVis.filter(g => A.get(g.id)?.stato !== 'primo').length)}` : '', 'rispetto al miglior tempo precedente, stessa vasca')}
     ${kpi('Miglioramento mediano', null, migl.length ? perc(mediana(migl), 1) : '—', '', 'sui personali migliorati')}
   </div>` : '';
@@ -4080,20 +4368,32 @@ function vistaGare() {
   const formManif = nuovaAperta ? `<form id="formManif" class="form sotto-form" novalidate>
       <h4 class="etichetta" style="margin:0">${mf ? 'Modifica manifestazione' : 'Nuova manifestazione'}</h4>
       <div class="campi">
-        <label class="campo">Data<input type="date" id="mData" value="${esc(mf?.data || oggiStr())}"></label>
+        <label class="campo">Dal<input type="date" id="mData" value="${esc(mf?.data || oggiStr())}"></label>
+        <label class="campo">Fino al (più giorni)<input type="date" id="mFine" value="${esc(mf && fineManif(mf) > mf.data ? mf.fine : '')}"></label>
         <label class="campo" style="grid-column:span 2">Nome<input type="text" id="mNome" value="${esc(mf?.nome || '')}" placeholder="es. Campionati regionali di categoria"></label>
         <label class="campo">Luogo<input type="text" id="mLuogo" value="${esc(mf?.luogo || '')}" placeholder="es. Torino"></label>
         <label class="campo">Vasca<select id="mVasca">${opt(50, mf?.vasca ?? 50, '50 m')}${opt(25, mf?.vasca, '25 m')}</select></label>
       </div>
+      <details class="carico-gara" ${mf && (mf.risc != null || mf.defat != null || mf.rpe != null) ? 'open' : ''}><summary>Carico della gara come allenamento</summary>
+        <p class="nota-piccola" style="margin-top:0">Per chi gareggia ogni mezza giornata di gare (mattino o pomeriggio) vale come un allenamento: riscaldamento, le gare (50 m in ${zonaGara(50)}, 100–200 m in ${zonaGara(200)}, dai 400 m in ${zonaGara(400)}) e il defaticamento. Lascia vuoto per i valori di base.</p>
+        <div class="campi">
+          <label class="campo">Riscaldamento per mezza giornata (m)<input type="number" id="mRisc" inputmode="numeric" min="0" step="100" value="${mf?.risc ?? ''}" placeholder="${CONFIG.gara.riscaldamento}"></label>
+          <label class="campo">Defaticamento per mezza giornata (m)<input type="number" id="mDefat" inputmode="numeric" min="0" step="50" value="${mf?.defat ?? ''}" placeholder="${CONFIG.gara.defaticamento}"></label>
+          <label class="campo">RPE prevista<select id="mRpe">${opt('', mf?.rpe ?? '', `— (${CONFIG.gara.rpe})`)}${RPE_SCALA.map((x, i) => opt(i, mf?.rpe ?? '', x)).join('')}</select></label>
+        </div></details>
       <div class="azioni"><button type="submit" class="btn primario">${mf ? 'Salva modifiche' : 'Crea manifestazione'}</button>${tutte.length ? '<button type="button" class="btn" data-action="gr-annulla-manif">Annulla</button>' : ''}<span class="esito" id="mEsito" role="status"></span></div>
     </form>` : '';
   const gm = UI.garaModifica ? DB.gare.find(g => g.id === UI.garaModifica) : null;
   const atlDefault = gm?.atleta || UI.ultimoAtletaGara || UI.atleta || atleti[0] || '';
+  const ms = mp.get(UI.manifSel), giorniSel = ms ? giorniManif(ms) : [];
+  const giornoDefault = gm && ms ? dataRis(gm, ms) : giorniSel.includes(UI.ultimoGiornoGara) ? UI.ultimoGiornoGara : giorniSel.includes(oggiStr()) ? oggiStr() : giorniSel[0];
   const formRis = UI.manifSel && !nuovaAperta ? `<form id="formGara" class="form" novalidate>
       <div class="campi">
+        ${giorniSel.length > 1 ? `<label class="campo">Giorno<select id="rGiorno">${giorniSel.map(d => opt(d, giornoDefault, etGiornoManif(ms, d))).join('')}</select></label>` : ''}
+        <label class="campo">Mezza giornata<select id="rFascia">${FASCE_GARA.map(f => opt(f, gm ? fasciaGara(gm) : UI.ultimaFasciaGara || 'Mattino')).join('')}</select></label>
         <label class="campo">Atleta<select id="rAtleta">${atleti.map(a => opt(a, atlDefault)).join('')}</select></label>
         <label class="campo">Gara<input type="text" id="rGara" list="dlGare" value="${esc(gm?.gara || UI.ultimaGara || '')}" placeholder="es. 100 SL"></label>
-        <label class="campo">Tempo<input type="text" id="rTempo" inputmode="decimal" value="${gm ? esc(fmtTempo(gm.tempo)) : ''}" placeholder="1:02.35"></label>
+        <label class="campo">Tempo<input type="text" id="rTempo" inputmode="decimal" value="${gm && conTempo(gm) ? esc(fmtTempo(gm.tempo)) : ''}" placeholder="1:02.35 · vuoto = iscritto"></label>
         <label class="campo">Posizione<input type="number" id="rPos" inputmode="numeric" min="1" value="${gm?.posizione ?? ''}" placeholder="facoltativa"></label>
       </div>
       <datalist id="dlGare">${[...new Set([...GARE_COMUNI, ...DB.gare.map(g => g.gara)])].map(g => `<option value="${esc(g)}">`).join('')}</datalist>
@@ -4101,30 +4401,45 @@ function vistaGare() {
       <div class="f-riga aspetti" aria-label="Inserisci un aspetto tecnico">${ASPETTI_TECNICI.map(a => `<button type="button" class="chip" data-action="gr-aspetto" data-v="${a}">+ ${a}</button>`).join('')}</div>
       <div class="azioni"><button type="submit" class="btn primario">${gm ? 'Salva modifiche' : 'Aggiungi risultato'}</button>${gm ? '<button type="button" class="btn" data-action="gr-annulla-ris">Annulla</button>' : ''}<span class="esito" id="rEsito" role="status"></span></div>
     </form>` : '';
-  const ins = `<section class="card" id="secGareIns">${cardHead(gm ? 'Modifica risultato' : 'Inserisci risultati', null, 'Scegli la manifestazione, poi aggiungi i risultati uno alla volta: atleta e gara restano pronti per il successivo.')}
+  const ins = `<section class="card" id="secGareIns">${cardHead(gm ? 'Modifica risultato' : 'Inserisci risultati', null, 'Scegli la manifestazione, poi aggiungi i risultati uno alla volta: giorno, mezza giornata, atleta e gara restano pronti per il successivo. Prima della gara puoi inserire le iscrizioni senza tempo: contano già nella programmazione come allenamento di chi gareggia.')}
     ${tutte.length ? `<div class="azioni" style="margin-bottom:12px">
-      <label class="campo" style="flex:1 1 320px">Manifestazione<select id="gManif">${tutte.map(m => opt(m.id, UI.manifSel, `${fmtData(m.data)} ${toDate(m.data).getUTCFullYear()} · ${m.nome} · vasca ${m.vasca} m`)).join('')}</select></label>
+      <label class="campo" style="flex:1 1 320px">Manifestazione<select id="gManif">${tutte.map(m => opt(m.id, UI.manifSel, `${fmtPeriodoBreve(m)} · ${m.nome} · vasca ${m.vasca} m`)).join('')}</select></label>
       <button type="button" class="btn" data-action="gr-nuova-manif" style="align-self:flex-end">Nuova manifestazione</button></div>` : ''}
     ${formManif}${formRis}</section>`;
 
   // --- riepilogo per manifestazione ---
   const carte = manifVis.map(m => {
-    const r = gareVis.filter(g => g.manifId === m.id).sort((a, b) => a.atleta.localeCompare(b.atleta, 'it') || a.gara.localeCompare(b.gara, 'it'));
+    const giorni = giorniManif(m), multi = giorni.length > 1;
+    const r = tuttiVisibili.filter(g => g.manifId === m.id).sort((a, b) => (dataRis(a, m) < dataRis(b, m) ? -1 : dataRis(a, m) > dataRis(b, m) ? 1 : 0) || FASCE_GARA.indexOf(fasciaGara(a)) - FASCE_GARA.indexOf(fasciaGara(b)) || a.atleta.localeCompare(b.atleta, 'it') || ordineGara(a.gara) - ordineGara(b.gara) || a.gara.localeCompare(b.gara, 'it'));
+    const sessione = g => `${dataRis(g, m)}|${fasciaGara(g)}`, dueFasce = r.some(g => fasciaGara(g) === 'Pomeriggio');
+    const nT = r.filter(conTempo).length, nIscr = r.length - nT;
     const nPb = r.filter(g => A.get(g.id)?.stato === 'pb').length, podi = r.filter(g => g.posizione && g.posizione <= 3).length;
-    const righe = r.map(g => `<tr class="${g.id === UI.garaModifica ? 'sel' : ''}"><td class="nome-atl">${esc(g.atleta)}</td><td>${esc(g.gara)}</td>
-      <td class="num"><b class="tempo">${fmtTempo(g.tempo)}</b></td><td class="num">${g.posizione ? g.posizione + '°' : '—'}</td>
+    // carico come allenamento: media per atleta in gara, mezze giornate sommate
+    const perAtl = new Map();
+    let nSess = 0;
+    for (const d of giorni) for (const x of lavoriGara(m, d)) { if (x.atleti.length) nSess++; for (const [a, c] of x.per) { const t = perAtl.get(a) || { metri: 0, ua: 0 }; t.metri += c.metri; t.ua += c.durata * x.rpeTarget; perAtl.set(a, t); } }
+    const caricoTxt = perAtl.size ? ` · come allenamento: ${num(media([...perAtl.values()].map(t => t.metri)))} m e ${num(media([...perAtl.values()].map(t => t.ua)))} UA per atleta in gara${nSess > 1 ? ` (${nSess} mezze giornate)` : ''}` : '';
+    let sessPrima = '';
+    const righe = r.map(g => {
+      const d = dataRis(g, m), k = sessione(g);
+      const testaGiorno = (multi || dueFasce) && k !== sessPrima ? `<tr class="riga-giorno"><th colspan="9" scope="rowgroup">${GIORNI_LUNGHI[giornoSett(d)]} ${fmtData(d)}${multi ? ` · ${giorni.indexOf(d) + 1}° giorno` : ''} · ${fasciaGara(g).toLowerCase()} · ${r.filter(x => sessione(x) === k).length} gare</th></tr>` : '';
+      sessPrima = k;
+      return `${testaGiorno}<tr class="${g.id === UI.garaModifica ? 'sel' : ''}${conTempo(g) ? '' : ' iscr'}"><td class="nome-atl">${esc(g.atleta)}</td><td>${esc(g.gara)}</td>
+      <td class="num">${conTempo(g) ? `<b class="tempo">${fmtTempo(g.tempo)}</b>` : '<span class="muto">iscritto</span>'}</td><td class="num">${g.posizione ? g.posizione + '°' : '—'}</td>
       <td>${chipPersonale(A.get(g.id))}</td>${VASCHE.map(v => cellaPB(PB.get(`${g.atleta}|${g.gara}`)?.[v.v], g.id, false)).join('')}<td class="note-tec">${g.note ? esc(g.note).replace(/\n/g, '<br>') : '<span class="muto">—</span>'}</td>
-      <td class="riga-az"><button type="button" class="btn-x" data-action="gr-modifica-ris" data-id="${g.id}" aria-label="Modifica risultato">✎</button><button type="button" class="btn-x" data-action="gr-elimina-ris" data-id="${g.id}" aria-label="Elimina risultato">✕</button></td></tr>`).join('');
+      <td class="riga-az"><button type="button" class="btn-x" data-action="gr-modifica-ris" data-id="${g.id}" aria-label="Modifica risultato">✎</button><button type="button" class="btn-x" data-action="gr-elimina-ris" data-id="${g.id}" aria-label="Elimina risultato">✕</button></td></tr>`;
+    }).join('');
     return `<section class="card">
       <div class="al-top"><div><h3 class="manif-nome">${esc(m.nome)}</h3>
-        <p class="nota" style="margin:4px 0 0">${fmtGiornoLungo(m.data)}${m.luogo ? ' · ' + esc(m.luogo) : ''} · vasca ${m.vasca} m · ${r.length} ${r.length === 1 ? 'gara' : 'gare'}${nPb ? ` · ${nPb} ${nPb === 1 ? 'personale' : 'personali'}` : ''}${podi ? ` · ${podi} ${podi === 1 ? 'podio' : 'podi'}` : ''}</p></div>
+        <p class="nota" style="margin:4px 0 0">${fmtPeriodoManif(m)}${multi ? ` (${giorni.length} giorni)` : ''}${m.luogo ? ' · ' + esc(m.luogo) : ''} · vasca ${m.vasca} m · ${nT} ${nT === 1 ? 'gara' : 'gare'}${nIscr ? ` · ${nIscr} ${nIscr === 1 ? 'iscrizione' : 'iscrizioni'}` : ''}${nPb ? ` · ${nPb} ${nPb === 1 ? 'personale' : 'personali'}` : ''}${podi ? ` · ${podi} ${podi === 1 ? 'podio' : 'podi'}` : ''}</p>
+        ${caricoTxt ? `<p class="nota-piccola" style="margin:2px 0 0">${caricoTxt.slice(3).replace(/^c/, 'C')}${giorni.some(d => d >= oggiStr()) ? ' · i giorni da fare contano come programmati' : ''}</p>` : ''}</div>
         <div class="azioni"><button type="button" class="btn piccolo" data-action="gr-scegli-manif" data-id="${m.id}">Aggiungi risultati</button><button type="button" class="btn piccolo" data-action="gr-modifica-manif" data-id="${m.id}">Modifica</button><button type="button" class="btn-x" data-action="gr-elimina-manif" data-id="${m.id}" aria-label="Elimina manifestazione">✕</button></div></div>
       ${r.length ? `<div class="tbl-wrap" style="margin-top:10px"><table class="tab-gare"><thead><tr><th rowspan="2">Atleta</th><th rowspan="2">Gara</th><th rowspan="2" class="num">Tempo</th><th rowspan="2" class="num">Pos.</th><th rowspan="2">Rispetto al precedente</th><th colspan="2" class="gruppo-th">Personal best</th><th rowspan="2">Note tecniche</th><th rowspan="2"></th></tr><tr>${VASCHE.map(v => `<th class="num">${v.nome}<br><small>${v.breve}</small></th>`).join('')}</tr></thead><tbody>${righe}</tbody></table></div>` : '<p class="vuoto">Nessun risultato inserito.</p>'}
     </section>`;
   }).join('');
 
   // --- personali e progressione ---
-  const tuttiVis = DB.gare.filter(g => { const m = mp.get(g.manifId); return m && dataVisibile(m.data, piano) && atleti.includes(g.atleta); });
+  const tuttiVis = DB.gare.filter(g => { const m = mp.get(g.manifId); return m && conTempo(g) && manifVisibile(m) && atleti.includes(g.atleta); });
   const pers = [...PB.entries()].map(([k, r]) => ({ atleta: k.split('|')[0], gara: k.split('|')[1], r }))
     .filter(x => atleti.includes(x.atleta) && (!UI.atleta || x.atleta === UI.atleta))
     .sort((a, b) => a.atleta.localeCompare(b.atleta, 'it') || ordineGara(a.gara) - ordineGara(b.gara) || a.gara.localeCompare(b.gara, 'it'));
@@ -4149,9 +4464,9 @@ function vistaGare() {
 
   const dopo = () => {
     if (!aProg) return;
-    const serie = sueGare.filter(g => g.gara === gProg).map(g => ({ g, m: mp.get(g.manifId) })).sort((a, b) => (a.m.data < b.m.data ? -1 : 1));
-    const date = [...new Set(serie.map(x => x.m.data))];
-    const val = v => date.map(d => { const t = serie.filter(x => x.m.data === d && x.m.vasca === v).map(x => x.g.tempo); return t.length ? Math.min(...t) : null; });
+    const serie = sueGare.filter(g => g.gara === gProg).map(g => { const m = mp.get(g.manifId); return { g, m, d: dataRis(g, m) }; }).sort((a, b) => (a.d < b.d ? -1 : 1));
+    const date = [...new Set(serie.map(x => x.d))];
+    const val = v => date.map(d => { const t = serie.filter(x => x.d === d && x.m.vasca === v).map(x => x.g.tempo); return t.length ? Math.min(...t) : null; });
     const v50 = val(50), v25 = val(25);
     const strati = [], leg = [];
     if (v50.some(x => x != null)) { strati.push({ tipo: 'linea', valori: v50, colore: '--s-blue', punti: true, spessore: 2.5 }); leg.push({ label: 'Vasca 50 m', colore: '--s-blue', forma: 'linea' }); }
@@ -4159,40 +4474,66 @@ function vistaGare() {
     grafico($('#gGareProg'), {
       titolo: `${aProg} ${gProg}`, altezza: 240, categorie: date, etichettaX: i => fmtData(date[i]), zero: false, fmtY: v => fmtTempo(v, 1),
       legenda: leg, strati,
-      tooltip: i => `<div class="tt-t">${fmtDataAnno(date[i])}</div>` + serie.filter(x => x.m.data === date[i]).map(x => rigaTT(`${x.m.nome} · ${x.m.vasca} m`, fmtTempo(x.g.tempo), x.m.vasca === 50 ? '--s-blue' : '--s-orange', 'linea')).join(''),
+      tooltip: i => `<div class="tt-t">${fmtDataAnno(date[i])}</div>` + serie.filter(x => x.d === date[i]).map(x => rigaTT(`${x.m.nome} · ${x.m.vasca} m`, fmtTempo(x.g.tempo), x.m.vasca === 50 ? '--s-blue' : '--s-orange', 'linea')).join(''),
     });
   };
   return { html, dopo };
 }
 
 /* ---- azioni ---- */
+// salva le gare: prima allinea le sedute di gara degli atleti (la gara è il loro allenamento)
+function salvaGare() { sincronizzaGare(); return salva(); }
+const giorniFra = (a, b) => Math.round((toDate(b) - toDate(a)) / 864e5);
 function salvaManif() {
-  const data = parseData($('#mData').value), nome = $('#mNome').value.trim(), luogo = $('#mLuogo').value.trim(), vasca = Number($('#mVasca').value);
-  const e = $('#mEsito');
-  if (!data || !nome) { e.textContent = 'Servono la data e il nome della manifestazione.'; e.className = 'esito errore'; return; }
+  const data = parseData($('#mData').value), fineV = $('#mFine')?.value ? parseData($('#mFine').value) : null;
+  const nome = $('#mNome').value.trim(), luogo = $('#mLuogo').value.trim(), vasca = Number($('#mVasca').value);
+  const intero = id => { const v = parseNum($(id)?.value); return v == null || !(v >= 0) ? null : Math.round(v); };
+  const risc = intero('#mRisc'), defat = intero('#mDefat'), rpeV = $('#mRpe')?.value ?? '', rpe = rpeV === '' ? null : Number(rpeV);
+  const e = $('#mEsito'), errore = t => { e.textContent = t; e.className = 'esito errore'; };
+  if (!data || !nome) return errore('Servono la data e il nome della manifestazione.');
+  if ($('#mFine')?.value && !fineV) return errore('Data «Fino al» non valida.');
+  if (fineV && fineV < data) return errore('«Fino al» viene prima del primo giorno: controlla le date.');
+  if (fineV && giorniFra(data, fineV) >= CONFIG.gara.maxGiorni) return errore(`Una manifestazione dura al massimo ${CONFIG.gara.maxGiorni} giorni: controlla le date.`);
+  const fine = fineV && fineV > data ? fineV : null;
+  const campi = { data, fine, nome, luogo, vasca, risc, defat, rpe };
+  for (const k of ['fine', 'risc', 'defat', 'rpe']) if (campi[k] == null) delete campi[k];
   const esistente = UI.manifForm && UI.manifForm !== 'nuova' ? DB.manifestazioni.find(m => m.id === UI.manifForm) : null;
-  if (esistente) Object.assign(esistente, { data, nome, luogo, vasca });
-  else { const m = { id: uid(), data, nome, luogo, vasca }; DB.manifestazioni.push(m); UI.manifSel = m.id; }
-  UI.manifForm = null; salva();
-  if (UI.preset === 'custom' && (data > UI.a || data < UI.da)) UI.preset = 'tutto';
-  render(); avviso(esistente ? 'Manifestazione aggiornata' : `Creata «${nome}»: ora aggiungi i risultati`);
+  if (esistente) {
+    // date cambiate: i giorni dei risultati si spostano con la manifestazione e restano dentro le sue date
+    const sposta = giorniFra(esistente.data, data), ultimo = fine || data;
+    for (const g of DB.gare.filter(x => x.manifId === esistente.id)) {
+      let d = addDays(dataRis(g, esistente), sposta);
+      if (d < data) d = data; if (d > ultimo) d = ultimo;
+      g.data = d;
+    }
+    for (const k of ['fine', 'risc', 'defat', 'rpe']) delete esistente[k];
+    Object.assign(esistente, campi);
+  } else { const m = { id: uid(), ...campi }; DB.manifestazioni.push(m); UI.manifSel = m.id; }
+  UI.manifForm = null; salvaGare();
+  if (UI.preset === 'custom' && (data > UI.a || (fine || data) < UI.da)) UI.preset = 'tutto';
+  render(); avviso(esistente ? 'Manifestazione aggiornata' : `Creata «${nome}»${fine ? ` (${giorniFra(data, fine) + 1} giorni)` : ''}: ora aggiungi risultati o iscrizioni`);
   $('#rTempo')?.focus();
 }
 function salvaRisultato() {
   const e = $('#rEsito'), atleta = $('#rAtleta').value, gara = $('#rGara').value.trim().replace(/\s+/g, ' ').toUpperCase().replace(/^(\d+)\s*(SL|DO|RA|FA|MI|MX|MISTI)\b/, '$1 $2');
-  const tempo = parseTempo($('#rTempo').value), pos = parseNum($('#rPos').value), note = $('#rNote').value.trim();
+  const testoT = $('#rTempo').value.trim(), tempo = testoT ? parseTempo(testoT) : null, pos = parseNum($('#rPos').value), note = $('#rNote').value.trim();
+  const m = DB.manifestazioni.find(x => x.id === UI.manifSel);
+  const giorni = m ? giorniManif(m) : [], scelto = $('#rGiorno')?.value, data = giorni.includes(scelto) ? scelto : m?.data;
   const err = [];
+  if (!m) err.push('scegli la manifestazione');
   if (!atleta) err.push('scegli l\'atleta');
   if (!gara) err.push('scrivi la gara');
-  if (!(tempo > 0)) err.push('scrivi il tempo, es. 1:02.35');
+  if (testoT && !(tempo > 0)) err.push('scrivi il tempo come 1:02.35 (o lascialo vuoto per un\'iscrizione)');
   if (err.length) { e.textContent = 'Per salvare: ' + err.join(', ') + '.'; e.className = 'esito errore'; return; }
   const esistente = UI.garaModifica ? DB.gare.find(g => g.id === UI.garaModifica) : null;
-  if (esistente) Object.assign(esistente, { atleta, gara, tempo, posizione: pos || null, note });
-  else DB.gare.push({ id: uid(), manifId: UI.manifSel, atleta, gara, tempo, posizione: pos || null, note });
-  UI.garaModifica = null; UI.ultimoAtletaGara = atleta; UI.ultimaGara = gara;
-  salva(); render();
+  const fascia = fasciaDa($('#rFascia')?.value);
+  const campi = { data, fascia, atleta, gara, tempo: tempo > 0 ? tempo : null, posizione: pos || null, note };
+  if (esistente) Object.assign(esistente, campi);
+  else DB.gare.push({ id: uid(), manifId: UI.manifSel, ...campi });
+  UI.garaModifica = null; UI.ultimoAtletaGara = atleta; UI.ultimaGara = gara; UI.ultimoGiornoGara = data; UI.ultimaFasciaGara = fascia;
+  salvaGare(); render();
   const a = analisiGare().get((esistente || DB.gare[DB.gare.length - 1]).id);
-  avviso(`${atleta} · ${gara} · ${fmtTempo(tempo)}${a?.stato === 'pb' ? ' · nuovo personale!' : ''}`);
+  avviso(`${atleta} · ${gara}${giorni.length > 1 ? ` · ${fmtGiorno(data)}` : ''} · ${tempo > 0 ? fmtTempo(tempo) : 'iscritto'}${a?.stato === 'pb' ? ' · nuovo personale!' : ''}`);
   $('#rTempo')?.focus();
 }
 function azioneGare(az, b) {
@@ -4200,10 +4541,10 @@ function azioneGare(az, b) {
   else if (az === 'gr-annulla-manif') { UI.manifForm = null; render(); }
   else if (az === 'gr-modifica-manif') { UI.manifForm = b.dataset.id; UI.manifSel = b.dataset.id; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); }
   else if (az === 'gr-scegli-manif') { UI.manifSel = b.dataset.id; UI.manifForm = null; UI.garaModifica = null; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); $('#rTempo')?.focus({ preventScroll: true }); }
-  else if (az === 'gr-elimina-manif') confermaDoppia(b, () => { DB.gare = DB.gare.filter(g => g.manifId !== b.dataset.id); DB.manifestazioni = DB.manifestazioni.filter(m => m.id !== b.dataset.id); salva(); render(); avviso('Manifestazione eliminata'); }, 'Elimina con i risultati');
+  else if (az === 'gr-elimina-manif') confermaDoppia(b, () => { DB.gare = DB.gare.filter(g => g.manifId !== b.dataset.id); DB.manifestazioni = DB.manifestazioni.filter(m => m.id !== b.dataset.id); salvaGare(); render(); avviso('Manifestazione eliminata'); }, 'Elimina con i risultati');
   else if (az === 'gr-modifica-ris') { const g = DB.gare.find(x => x.id === b.dataset.id); if (!g) return; UI.garaModifica = g.id; UI.manifSel = g.manifId; UI.manifForm = null; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); }
   else if (az === 'gr-annulla-ris') { UI.garaModifica = null; render(); }
-  else if (az === 'gr-elimina-ris') confermaDoppia(b, () => { DB.gare = DB.gare.filter(g => g.id !== b.dataset.id); if (UI.garaModifica === b.dataset.id) UI.garaModifica = null; salva(); render(); }, 'Elimina');
+  else if (az === 'gr-elimina-ris') confermaDoppia(b, () => { DB.gare = DB.gare.filter(g => g.id !== b.dataset.id); if (UI.garaModifica === b.dataset.id) UI.garaModifica = null; salvaGare(); render(); }, 'Elimina');
   else if (az === 'gr-aspetto') {
     const t = $('#rNote'); if (!t) return;
     t.value = (t.value.trim() ? t.value.replace(/\s+$/, '') + '\n' : '') + b.dataset.v + ': ';
@@ -4212,45 +4553,87 @@ function azioneGare(az, b) {
 }
 function cambioGare(el) {
   if (el.id === 'gManif') { UI.manifSel = el.value; UI.garaModifica = null; render(); return true; }
+  if (el.id === 'rGiorno') { UI.ultimoGiornoGara = el.value; return true; }
+  if (el.id === 'rFascia') { UI.ultimaFasciaGara = el.value; return true; }
   if (el.id === 'grAtletaProg') { UI.garaAtleta = el.value; UI.garaSel = ''; if (UI.atleta && UI.atleta !== el.value) UI.atleta = el.value; render(); return true; }
   if (el.id === 'grGaraProg') { UI.garaSel = el.value; render(); return true; }
   return false;
 }
 
 /* ---- CSV ---- */
-const COL_GARE = ['data', 'manifestazione', 'luogo', 'vasca', 'atleta', 'gara', 'tempo', 'posizione', 'note_tecniche'];
+// data = giorno della gara; mezza_giornata = mattino o pomeriggio; fino_al = ultimo giorno della manifestazione
+// (se dura più giorni); tempo vuoto = iscrizione
+const COL_GARE = ['data', 'mezza_giornata', 'manifestazione', 'luogo', 'vasca', 'atleta', 'gara', 'tempo', 'posizione', 'note_tecniche', 'fino_al'];
 function esportaGare() {
   const mp = manifPerId();
-  const righe = DB.gare.map(g => ({ g, m: mp.get(g.manifId) })).filter(x => x.m).sort((a, b) => (a.m.data < b.m.data ? -1 : a.m.data > b.m.data ? 1 : a.g.atleta.localeCompare(b.g.atleta, 'it')))
-    .map(({ g, m }) => [m.data, m.nome, m.luogo || '', m.vasca, g.atleta, g.gara, fmtTempoIT(g.tempo), g.posizione ?? '', g.note || '']);
+  const righe = DB.gare.map(g => ({ g, m: mp.get(g.manifId) })).filter(x => x.m).map(x => ({ ...x, d: dataRis(x.g, x.m) }))
+    .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : FASCE_GARA.indexOf(fasciaGara(a.g)) - FASCE_GARA.indexOf(fasciaGara(b.g)) || a.g.atleta.localeCompare(b.g.atleta, 'it')))
+    .map(({ g, m, d }) => [d, fasciaGara(g).toLowerCase(), m.nome, m.luogo || '', m.vasca, g.atleta, g.gara, conTempo(g) ? fmtTempoIT(g.tempo) : '', g.posizione ?? '', g.note || '', fineManif(m) > m.data ? fineManif(m) : '']);
   if (!righe.length) { avviso('Nessun risultato da esportare.'); return; }
   scarica(`gare_${oggiStr()}.csv`, toCSV(COL_GARE, righe));
 }
 const modelloGare = () => toCSV(COL_GARE, [
-  ['2026-11-15', 'Regionali di categoria', 'Torino', '50', elencoAtleti()[0] || 'Cognome Nome', '100 SL', `59"87`, '3', 'Partenza: buona. Virate: lente. Passaggi: 28"9 – 30"9'],
-  ['2026-11-15', 'Regionali di categoria', 'Torino', '50', elencoAtleti()[0] || 'Cognome Nome', '200 SL', `2'08"10`, '', ''],
+  ['2026-12-12', 'mattino', 'Regionali di categoria', 'Torino', '50', elencoAtleti()[0] || 'Cognome Nome', '100 SL', `59"87`, '3', 'Partenza: buona. Virate: lente. Passaggi: 28"9 – 30"9', '2026-12-13'],
+  ['2026-12-12', 'pomeriggio', 'Regionali di categoria', 'Torino', '50', elencoAtleti()[0] || 'Cognome Nome', '50 SL', `27"40`, '', '', '2026-12-13'],
+  ['2026-12-13', 'mattino', 'Regionali di categoria', 'Torino', '50', elencoAtleti()[0] || 'Cognome Nome', '200 SL', `2'08"10`, '', '', '2026-12-13'],
+  ['2026-12-13', 'mattino', 'Regionali di categoria', 'Torino', '50', elencoAtleti()[1] || 'Cognome Nome', '50 SL', '', '', 'iscrizione: tempo da scrivere dopo la gara', '2026-12-13'],
 ]);
+// manifestazione di una riga importata: stesso nome e vasca, giorno dentro le sue date o a pochi giorni
+const stessoNome = (a, b) => String(a || '').trim().toLocaleLowerCase('it') === String(b || '').trim().toLocaleLowerCase('it');
+function manifPerRiga(nome, vasca, data) {
+  return DB.manifestazioni.find(m => stessoNome(m.nome, nome) && m.vasca === vasca && data >= addDays(m.data, -3) && data <= addDays(fineManif(m), 3)
+    && giorniFra(data < m.data ? data : m.data, data > fineManif(m) ? data : fineManif(m)) < CONFIG.gara.maxGiorni);
+}
+function allargaManif(m, d) {
+  if (!d) return;
+  const fine = fineManif(m);
+  if (d < m.data) { for (const g of DB.gare) if (g.manifId === m.id && !g.data) g.data = m.data; m.fine = fine; m.data = d; }
+  if (d > fineManif(m)) m.fine = d;
+  if (m.fine && m.fine <= m.data) delete m.fine;
+}
 function importaGare(testo, modo) {
   const { intestazione, righe } = parseCSV(testo);
   if (!['data', 'manifestazione', 'atleta', 'gara', 'tempo'].every(c => intestazione.includes(c))) { logIO('Intestazione non riconosciuta: servono data, manifestazione, atleta, gara e tempo. Scarica il modello per vedere il formato.', true); return; }
   if (modo === 'sostituisci') { DB.gare = []; DB.manifestazioni = []; }
   let ok = 0; const err = [], esclusi = new Set();
+  let iscr = 0;
   for (const r of righe) {
-    const data = parseData(r.data), tempo = parseTempo(r.tempo), vasca = parseNum(r.vasca) === 25 ? 25 : 50;
-    if (!data || !r.manifestazione || !r.atleta || !r.gara || !(tempo > 0)) { err.push(`riga ${r._riga}`); continue; }
+    const data = parseData(r.data), testoT = String(r.tempo || '').trim(), tempo = testoT ? parseTempo(testoT) : null, vasca = parseNum(r.vasca) === 25 ? 25 : 50;
+    const fino = r.fino_al ? parseData(r.fino_al) : null;
+    if (!data || !r.manifestazione || !r.atleta || !r.gara || (testoT && !(tempo > 0))) { err.push(`riga ${r._riga}`); continue; }
+    // nome come nella rosa (maiuscole, accenti, nome scritto in un altro modo): niente doppioni dello stesso atleta
+    r.atleta = atletaDaNome(r.atleta) || r.atleta.trim().replace(/\s+/g, ' ');
     if ((DB.rimossi || []).includes(r.atleta)) { esclusi.add(r.atleta); continue; }
-    let m = DB.manifestazioni.find(x => x.data === data && x.nome === r.manifestazione && x.vasca === vasca);
-    if (!m) { m = { id: uid(), data, nome: r.manifestazione, luogo: r.luogo || '', vasca }; DB.manifestazioni.push(m); }
+    let m = manifPerRiga(r.manifestazione, vasca, data);
+    if (!m) { m = { id: uid(), data, nome: r.manifestazione.trim(), luogo: r.luogo || '', vasca }; DB.manifestazioni.push(m); }
+    allargaManif(m, data);
+    if (fino && fino > data && giorniFra(m.data, fino) < CONFIG.gara.maxGiorni) allargaManif(m, fino);
     if (!elencoAtleti().includes(r.atleta)) DB.atleti.push(r.atleta);
-    DB.gare.push({ id: uid(), manifId: m.id, atleta: r.atleta, gara: r.gara.toUpperCase(), tempo, posizione: parseNum(r.posizione) || null, note: r.note_tecniche || r.note || '' });
-    ok++;
+    DB.gare.push({ id: uid(), manifId: m.id, data, fascia: fasciaDa(r.mezza_giornata), atleta: r.atleta, gara: r.gara.toUpperCase(), tempo: tempo > 0 ? tempo : null, posizione: parseNum(r.posizione) || null, note: r.note_tecniche || r.note || '' });
+    ok++; if (!(tempo > 0)) iscr++;
   }
-  salva(); if (UI.preset === 'custom') UI.preset = 'tutto'; render();
-  logIO(`Gare: ${ok} risultati importati.` + (err.length ? ` Righe scartate (data, tempo o campi mancanti): ${err.slice(0, 8).join(', ')}${err.length > 8 ? '…' : ''}.` : '') + (esclusi.size ? ` Esclusi perché tolti dalla rosa: ${[...esclusi].join(', ')}.` : ''), !ok);
+  salvaGare(); if (UI.preset === 'custom') UI.preset = 'tutto'; render();
+  logIO(`Gare: ${ok} risultati importati${iscr ? ` (${iscr} iscrizioni senza tempo)` : ''}.` + (err.length ? ` Righe scartate (data, tempo o campi mancanti): ${err.slice(0, 8).join(', ')}${err.length > 8 ? '…' : ''}.` : '') + (esclusi.size ? ` Esclusi perché tolti dalla rosa: ${[...esclusi].join(', ')}.` : ''), !ok);
 }
 
 
 /* ------------------------------- DATI ------------------------------- */
+// Nome di un atleta corretto in Dati → Rosa: cambia in tutti i dati e, con il Foglio Google, nell'intestazione
+// della sua colonna (registro presenze e palestra) prima di ogni altra scrittura
+function salvaNomeAtleta(da) {
+  const a = ($('#rosaNome')?.value || '').trim().replace(/\s+/g, ' '), e = $('#rosaEsito');
+  const errore = t => { if (e) { e.textContent = t; e.className = 'esito errore'; } };
+  if (!a) return errore('Scrivi il nome.');
+  if (a === da) { UI.rinomina = null; render(); return; }
+  if (elencoAtleti().some(x => x !== da && x.toLocaleLowerCase('it') === a.toLocaleLowerCase('it'))) return errore(`${a} è già nella rosa.`);
+  if (typeof SYNC !== 'undefined' && SYNC.trasporto === 'foglio' && !DB.esempio) {
+    if (!FOGLIO.script || FOGLIO.script < '1.5') return errore('Per cambiare il nome anche nel Foglio Google serve lo script 1.5: incollalo in Apps Script, salva e crea una nuova versione del deployment.');
+    FOGLIO.rinomine.push({ t: 'rinomina', da, a });
+  }
+  rinominaAtletaIn(DB, da, a);
+  if (UI.atleta === da) UI.atleta = a;
+  UI.rinomina = null; salva(); render(); avviso(`Nome corretto: ${da} → ${a}`);
+}
 const RPE_SCALA = ['0 · Riposo', '1 · Molto facile', '2 · Facile', '3 · Moderato', '4 · Abbastanza duro', '5 · Duro', '6', '7 · Molto duro', '8', '9', '10 · Massimale'];
 const opzioniRpe = (vuota = 'RPE') => `<option value="">${vuota}</option>` + RPE_SCALA.map((t, i) => `<option value="${i}">${esc(t)}</option>`).join('');
 
@@ -4311,8 +4694,10 @@ function vistaDati(M) {
     ${cartaFoglio()}
     ${cartaDrive()}
     ${formSeduta}
-    <section class="card">${cardHead(`Rosa (${num(atleti.length)} atleti)`, null, 'Togliendo un atleta dalla rosa si cancellano anche le sue presenze, sedute e test. Chi è stato tolto non torna con un nuovo import del file presenze.')}
-      <div class="rosa">${atleti.map(n => `<div class="rosa-riga"><span>${esc(n)}</span><button type="button" class="btn piccolo pericolo" data-action="rosa-togli" data-a="${esc(n)}">Togli dalla rosa</button></div>`).join('')}</div>
+    <section class="card" id="cartaRosa">${cardHead(`Rosa (${num(atleti.length)} atleti)`, null, 'Correggi il nome con ✎: cambia ovunque (presenze, sedute, gare, test e, se è collegato, nel Foglio Google). Togliendo un atleta dalla rosa si cancellano anche le sue presenze, sedute e test. Chi è stato tolto non torna con un nuovo import del file presenze.')}
+      <div class="rosa">${atleti.map(n => UI.rinomina === n
+        ? `<form class="rosa-riga rosa-nome" data-rinomina="${esc(n)}"><input type="text" id="rosaNome" value="${esc(n)}" aria-label="Nome corretto di ${esc(n)}" autocomplete="off"><button type="submit" class="btn piccolo primario">Salva il nome</button><button type="button" class="btn piccolo" data-action="rosa-nome-annulla">Annulla</button><span class="esito" id="rosaEsito" role="status"></span></form>`
+        : `<div class="rosa-riga"><span>${esc(n)}</span><span class="rosa-az"><button type="button" class="btn-x" data-action="rosa-nome" data-a="${esc(n)}" aria-label="Correggi il nome di ${esc(n)}" title="Correggi il nome">✎</button><button type="button" class="btn piccolo pericolo" data-action="rosa-togli" data-a="${esc(n)}">Togli dalla rosa</button></span></div>`).join('')}</div>
       ${(DB.rimossi || []).length ? `<p class="nota-piccola">Tolti dalla rosa: ${DB.rimossi.map(n => `${esc(n)} <button type="button" class="btn piccolo" data-action="rosa-rimetti" data-a="${esc(n)}">Rimetti</button>`).join(' ')}</p>` : ''}
     </section>
     <section class="card">${cardHead('Importa ed esporta', null, 'CSV con separatore punto e virgola, pronti per Excel in italiano. Date come 2026-03-02 o 02/03/2026; tempi in secondi (272,15) o m:ss.cc; attrezzi separati da | (es. pinne|palette).')}
@@ -4800,6 +5185,7 @@ const FOGLIO = {
   cfg: null, versione: '', letto: 0, poll: null, riprova: null, attesa: 0, sporchi: new Set(),
   righeCal: new Map(), righeGare: new Map(), metri: [], errore: '', messaggio: '', inLettura: false,
   palestraNelFoglio: false, migraPalestra: [], nascostePalestra: new Set(), script: '',
+  rinomine: [],   // nomi di atleti corretti nell'app: si mandano prima di tutto il resto (colonne del registro)
 };
 const CHIAVE_FOGLIO = 'swimbrain-foglio', CHIAVE_CACHE = 'swimbrain-foglio-cache';
 // colonne del calendario ↔ parti della seduta (la colonna «Secondaria · Velocità» ne contiene due:
@@ -4819,7 +5205,7 @@ function salvaCacheFoglio() {
   if (SYNC.trasporto !== 'foglio') return;
   try {
     const db = DB.esempio ? (JSON.parse(localStorage.getItem(CHIAVE_CACHE) || 'null')?.db || null) : DB;
-    localStorage.setItem(CHIAVE_CACHE, JSON.stringify({ db, server: Object.fromEntries(SYNC.server), sporchi: [...FOGLIO.sporchi], versione: FOGLIO.versione, letto: FOGLIO.letto, palestra: FOGLIO.palestraNelFoglio, script: FOGLIO.script }));
+    localStorage.setItem(CHIAVE_CACHE, JSON.stringify({ db, server: Object.fromEntries(SYNC.server), sporchi: [...FOGLIO.sporchi], versione: FOGLIO.versione, letto: FOGLIO.letto, palestra: FOGLIO.palestraNelFoglio, script: FOGLIO.script, rinomine: FOGLIO.rinomine }));
   } catch (e) { memoriaNonDisponibile(); }
 }
 function leggiCacheFoglio() { try { return JSON.parse(localStorage.getItem(CHIAVE_CACHE) || 'null'); } catch (e) { return null; } }
@@ -4912,19 +5298,47 @@ function foglioInDb(j) {
     for (const z of ZONE_K()) { const x = numO(r[z + ' %']); perc[z] = x == null ? 0 : Math.round(x * 1000) / 10; }
     d.piano.push({ settimana: r.Dal, fase: testoF(r.Fase).trim(), metri: numO(r['Metri a piano']), ua: null, perc });
   }
-  // gare: una riga per risultato, id «manifestazione|risultato» (le righe scritte a mano: «|risultato»)
+  // gare: una riga per risultato, id «manifestazione|risultato» (le righe scritte a mano: «|risultato»).
+  // La «Data» di ogni riga è il giorno della gara: una manifestazione di più giorni va dalla prima all'ultima
+  // (date e carico scritti nell'app stanno anche nel dato nascosto «manif/<id>»). Le righe scritte a mano
+  // con lo stesso nome, luogo e vasca e giorni vicini sono la stessa manifestazione.
   FOGLIO.righeGare = new Map();
-  const mp = new Map();
+  const mp = new Map(), mano = [];
+  // mezza giornata: colonna «Mezza giornata» (script 1.4); se è vuota o manca, il dato nascosto (pomeriggio: elenco di righe)
+  const fasciaRiga = (r, mid) => (String(r['Mezza giornata'] ?? '').trim() ? fasciaDa(r['Mezza giornata'])
+    : (dati['manif/' + mid]?.pom || []).includes(String(r.id)) ? 'Pomeriggio' : 'Mattino');
+  const vascaR = r => (Number(r['Vasca (25/50)']) === 25 ? 25 : 50);
+  const nuova = (mid, r) => { const m = { id: mid, data: r.Data || '', nome: testoF(r.Manifestazione).trim(), luogo: testoF(r.Luogo).trim(), vasca: vascaR(r) }; mp.set(mid, m); d.manifestazioni.push(m); return m; };
+  const aggiungi = (m, r, rid) => {
+    if (!FOGLIO.righeGare.has(m.id)) FOGLIO.righeGare.set(m.id, []);
+    FOGLIO.righeGare.get(m.id).push(String(r.id));
+    if (r.Data && (!m.data || r.Data < m.data)) { if (m.data && !m.fine) m.fine = m.data; m.data = r.Data; }
+    if (r.Data && r.Data > fineManif(m)) m.fine = r.Data;
+    if (rid && (r.Atleta || r.Gara)) d.gare.push({ id: String(r.id), manifId: m.id, data: r.Data || m.data, fascia: fasciaRiga(r, m.id), atleta: testoF(r.Atleta).trim(), gara: testoF(r.Gara).trim(), tempo: numO(r['Tempo (s)']), posizione: numO(r.Posizione), note: testoF(r['Note tecniche']).trim() });
+  };
   for (const r of j.gare || []) {
     const [m0, rid] = String(r.id).split('|');
-    const mid = m0 || 'm-' + impronta([r.Data, r.Manifestazione, r.Luogo, r['Vasca (25/50)']].join('|'));
-    if (!FOGLIO.righeGare.has(mid)) FOGLIO.righeGare.set(mid, []);
-    FOGLIO.righeGare.get(mid).push(String(r.id));
-    if (!mp.has(mid)) {
-      const m = { id: mid, data: r.Data, nome: testoF(r.Manifestazione).trim(), luogo: testoF(r.Luogo).trim(), vasca: Number(r['Vasca (25/50)']) === 25 ? 25 : 50 };
-      mp.set(mid, m); d.manifestazioni.push(m);
-    }
-    if (rid && (r.Atleta || r.Gara)) d.gare.push({ id: String(r.id), manifId: mid, atleta: testoF(r.Atleta).trim(), gara: testoF(r.Gara).trim(), tempo: numO(r['Tempo (s)']), posizione: numO(r.Posizione), note: testoF(r['Note tecniche']).trim() });
+    if (!m0) { mano.push({ r, rid }); continue; }
+    aggiungi(mp.get(m0) || nuova(m0, r), r, rid);
+  }
+  const stesso = (a, b) => testoF(a).trim().toLocaleLowerCase('it') === testoF(b).trim().toLocaleLowerCase('it');
+  const vicina = (m, r) => stesso(m.nome, r.Manifestazione) && m.vasca === vascaR(r) && (!m.luogo || !testoF(r.Luogo).trim() || stesso(m.luogo, r.Luogo))
+    && m.data && r.Data >= addDays(m.data, -3) && r.Data <= addDays(fineManif(m), 3)
+    && giorniTra(r.Data < m.data ? r.Data : m.data, r.Data > fineManif(m) ? r.Data : fineManif(m)).length <= CONFIG.gara.maxGiorni;
+  mano.sort((a, b) => (String(a.r.Data) < String(b.r.Data) ? -1 : String(a.r.Data) > String(b.r.Data) ? 1 : 0));
+  for (const { r, rid } of mano) {
+    const mid = 'm-' + impronta([r.Data, r.Manifestazione, r.Luogo, r['Vasca (25/50)']].join('|'));
+    const m = mp.get(mid) || (r.Data ? d.manifestazioni.find(x => vicina(x, r)) : null) || nuova(mid, r);
+    aggiungi(m, r, rid);
+  }
+  // date e carico della gara scritti nell'app (se le righe del foglio non dicono altro)
+  for (const m of d.manifestazioni) {
+    if (m.fine && m.fine <= m.data) delete m.fine;
+    const x = dati['manif/' + m.id];
+    if (!x || typeof x !== 'object') continue;
+    const da = x.data && x.data < m.data ? x.data : m.data, a = x.fine && x.fine > fineManif(m) ? x.fine : fineManif(m);
+    if (da && giorniTra(da, a).length <= CONFIG.gara.maxGiorni) { m.data = da; if (a > da) m.fine = a; }
+    for (const k of ['risc', 'defat', 'rpe']) if (Number.isFinite(x[k])) m[k] = x[k];
   }
   return d;
 }
@@ -4984,12 +5398,25 @@ function docInOps(p, body, prima) {
   if (col === 'gare') {
     const mid = body?.manifestazione?.id ?? vecchio?.manifestazione?.id ?? k;
     const togli = [...new Set([...(FOGLIO.righeGare.get(mid) || []), ...(vecchio?.risultati || []).map(r => r.id).filter(id => String(id).includes('|'))])];
-    if (!body) return [{ t: 'gare', manifId: mid, togli, righe: [] }];
-    const m = body.manifestazione, base = { Data: m.data, Manifestazione: m.nome, Luogo: m.luogo || '', 'Vasca (25/50)': m.vasca };
-    const righe = (body.risultati || []).map(g => ({ id: String(g.id).includes('|') ? String(g.id) : `${mid}|${g.id}`,
-      valori: { ...base, Atleta: g.atleta, Gara: g.gara, 'Tempo (s)': g.tempo ?? '', Posizione: g.posizione ?? '', 'Note tecniche': g.note || '' } }));
-    if (!righe.length) righe.push({ id: `${mid}|`, valori: { ...base, Atleta: '', Gara: '', 'Tempo (s)': '', Posizione: '', 'Note tecniche': '' } });
-    return [{ t: 'gare', manifId: mid, togli, righe }];
+    // date (più giorni) e carico della gara: nel dato nascosto «manif/<id>»
+    const idRiga = g => (String(g.id).includes('|') ? String(g.id) : `${mid}|${g.id}`);
+    const extra = b => {
+      const m = b?.manifestazione; if (!m) return null;
+      const x = {}; if (fineManif(m) > m.data) { x.data = m.data; x.fine = m.fine; }
+      for (const c of ['risc', 'defat', 'rpe']) if (m[c] != null) x[c] = m[c];
+      const pom = (b.risultati || []).filter(g => fasciaGara(g) === 'Pomeriggio').map(idRiga);   // anche con lo script vecchio
+      if (pom.length) x.pom = pom;
+      return Object.keys(x).length ? x : null;
+    };
+    const exNuovo = extra(body), exVecchio = extra(vecchio);
+    const opDato = exNuovo || exVecchio || !body ? [{ t: 'dato', chiave: 'manif/' + mid, valore: exNuovo }] : [];
+    if (!body) return [{ t: 'gare', manifId: mid, togli, righe: [] }, ...opDato];
+    const m = body.manifestazione, base = d => ({ Data: d, Manifestazione: m.nome, Luogo: m.luogo || '', 'Vasca (25/50)': m.vasca });
+    // ogni risultato con il suo giorno di gara; tempo vuoto = iscrizione
+    const righe = (body.risultati || []).map(g => ({ id: idRiga(g),
+      valori: { ...base(giornoGara(g, m)), 'Mezza giornata': fasciaGara(g), Atleta: g.atleta, Gara: g.gara, 'Tempo (s)': g.tempo ?? '', Posizione: g.posizione ?? '', 'Note tecniche': g.note || '' } }));
+    if (!righe.length) righe.push({ id: `${mid}|`, valori: { ...base(m.data), 'Mezza giornata': '', Atleta: '', Gara: '', 'Tempo (s)': '', Posizione: '', 'Note tecniche': '' } });
+    return [{ t: 'gare', manifId: mid, togli, righe }, ...opDato];
   }
   if (col === 'squadra' && body) return [{ t: 'atleti', nomi: body.atleti || [] }, { t: 'dato', chiave: 'rosa', valore: { rimossi: body.rimossi || [], migrazioni: body.migrazioni || [] } }];
   return [];
@@ -5002,6 +5429,7 @@ function riallineaSedute() {
   const prima = firma();
   const date = new Set([...DB.allenamenti.map(a => a.data), ...DB.sedute.filter(x => x.allenamentoId).map(x => x.data)]);
   for (const d of date) sincronizzaSedute(d);
+  sincronizzaGare();
   if (firma() === prima) return false;
   salva();
   return true;
@@ -5119,7 +5547,7 @@ async function avviaFoglio(cfg, primaLettura = null) {
     // apertura veloce (anche senza rete) con la copia del telefono
     DB = { ...dbVuoto(), ...cache.db };
     impostaServer(new Map(Object.entries(cache.server || {}).map(([p, j]) => [p, JSON.parse(j)])), cache.versione);
-    FOGLIO.letto = cache.letto || 0; FOGLIO.palestraNelFoglio = !!cache.palestra; FOGLIO.script = cache.script || '';
+    FOGLIO.letto = cache.letto || 0; FOGLIO.palestraNelFoglio = !!cache.palestra; FOGLIO.script = cache.script || ''; FOGLIO.rinomine = cache.rinomine || [];
     for (const p of cache.sporchi || []) FOGLIO.sporchi.add(p);
     sovrapponiLocali(docsDaDB(DB), FOGLIO.sporchi);
     SYNC.pronto = true;
@@ -5178,11 +5606,12 @@ async function rileggiFoglio() {
 
 // invio: tutte le modifiche in coda in una sola chiamata
 async function eseguiCodaFoglio() {
-  if (SYNC.inCorso || (!SYNC.coda.length && !FOGLIO.metri.length)) return;
+  if (SYNC.inCorso || (!SYNC.coda.length && !FOGLIO.metri.length && !FOGLIO.rinomine.length)) return;
   if (SYNC.errore === 'token' || SYNC.errore === 'indirizzo') return;
   SYNC.inCorso = true; statoSync();
-  const lotto = SYNC.coda.splice(0), metri = FOGLIO.metri.splice(0);
-  const ops = lotto.flatMap(op => docInOps(op.p, op.del ? null : op.body, SYNC.server.get(op.p))).concat(metri);
+  const lotto = SYNC.coda.splice(0), metri = FOGLIO.metri.splice(0), rinomine = FOGLIO.rinomine.splice(0);
+  // prima i nomi corretti (intestazioni delle colonne), poi le presenze e il resto che li usano già
+  const ops = [...rinomine, ...lotto.flatMap(op => docInOps(op.p, op.del ? null : op.body, SYNC.server.get(op.p))), ...metri];
   let ok = false;
   try {
     const j = await chiamaFoglio({ azione: 'scrivi', ops });
@@ -5200,11 +5629,11 @@ async function eseguiCodaFoglio() {
     if (altri) setTimeout(() => controllaFoglio(true), 300);
   } catch (e) {
     for (const op of lotto.reverse()) if (!SYNC.coda.some(x => x.p === op.p)) SYNC.coda.unshift(op);
-    FOGLIO.metri.unshift(...metri);
+    FOGLIO.metri.unshift(...metri); FOGLIO.rinomine.unshift(...rinomine);
     SYNC.errore = e.code || 'rete'; FOGLIO.messaggio = e.message;
     programmaRiprova();
   } finally { SYNC.inCorso = false; salvaCacheFoglio(); statoSync(); }
-  if (ok && (SYNC.coda.length || FOGLIO.metri.length)) eseguiCodaFoglio();
+  if (ok && (SYNC.coda.length || FOGLIO.metri.length || FOGLIO.rinomine.length)) eseguiCodaFoglio();
   else if (ok && SYNC.remotoInAttesa && !SYNC.sporco) applicaRemoto();
 }
 function programmaRiprova() {
@@ -5212,7 +5641,7 @@ function programmaRiprova() {
   clearTimeout(FOGLIO.riprova);
   const ritardi = [5, 15, 30, 60, 120, 300];
   const s = ritardi[Math.min(FOGLIO.attesa++, ritardi.length - 1)];
-  FOGLIO.riprova = setTimeout(() => { if (SYNC.coda.length || FOGLIO.metri.length) eseguiCodaFoglio(); else controllaFoglio(true); }, s * 1000);
+  FOGLIO.riprova = setTimeout(() => { if (SYNC.coda.length || FOGLIO.metri.length || FOGLIO.rinomine.length) eseguiCodaFoglio(); else controllaFoglio(true); }, s * 1000);
 }
 window.addEventListener('online', () => { if (SYNC.trasporto === 'foglio') { FOGLIO.attesa = 0; eseguiCoda(); controllaFoglio(); } });
 document.addEventListener('visibilitychange', () => { if (SYNC.trasporto === 'foglio' && document.visibilityState === 'visible') controllaFoglio(Date.now() - FOGLIO.letto > 120000); });
@@ -5221,7 +5650,7 @@ function scollegaFoglio() {
   clearInterval(FOGLIO.poll); clearTimeout(FOGLIO.riprova);
   const dati = DB.esempio ? datiSquadra() : DB;
   SYNC.attivo = false; SYNC.trasporto = ''; SYNC.pronto = false; SYNC.coda = []; SYNC.inviati.clear(); SYNC.server.clear(); SYNC.errore = '';
-  FOGLIO.cfg = null; FOGLIO.sporchi.clear();
+  FOGLIO.cfg = null; FOGLIO.sporchi.clear(); FOGLIO.rinomine = [];
   try { localStorage.removeItem(CHIAVE_FOGLIO); localStorage.removeItem(CHIAVE_CACHE); localStorage.setItem(CONFIG.storageKey, JSON.stringify({ ...dati, esempio: false })); } catch (e) { /* facoltativo */ }
 }
 
@@ -5265,7 +5694,7 @@ function cartaFoglio() {
   const ko = SYNC.errore && SYNC.errore !== '';
   return `<section class="card" id="cartaFoglio">${cardHead('Foglio Google: la memoria della squadra', null, null)}
     <p class="drive-stato ${ko ? (SYNC.errore === 'rete' ? 'attesa' : 'errore') : 'ok'}"><span class="pallino"></span><span>Collegato${ora ? ` · ultima lettura alle <b>${ora}</b>` : ''} · ${attesa ? `<b>${attesa}</b> ${attesa === 1 ? 'modifica' : 'modifiche'} da inviare` : 'tutto salvato nel foglio'}${FOGLIO.messaggio ? `<br>${esc(FOGLIO.messaggio)}` : ''}</span></p>
-    ${FOGLIO.letto && FOGLIO.script && FOGLIO.script < '1.3' ? `<p class="nota-piccola avviso-script"><b>Script del foglio da aggiornare</b> (ora ${esc(FOGLIO.script)}, serve la 1.3): senza, nel calendario manca la colonna «Gruppo»${FOGLIO.palestraNelFoglio ? '' : ' e le presenze in palestra vanno nella scheda nascosta'}. I dati intanto sono salvi. Incolla lo script nuovo, salva e fai Gestisci deployment → matita → Nuova versione.</p>` : ''}
+    ${FOGLIO.letto && FOGLIO.script && FOGLIO.script < '1.5' ? `<p class="nota-piccola avviso-script"><b>Script del foglio da aggiornare</b> (ora ${esc(FOGLIO.script)}, serve la 1.5): senza, ${[FOGLIO.script < '1.3' ? 'nel calendario manca la colonna «Gruppo»' : '', FOGLIO.palestraNelFoglio ? '' : 'le presenze in palestra vanno nella scheda nascosta', FOGLIO.script < '1.4' ? 'nelle gare manca la colonna «Mezza giornata» (mattino o pomeriggio)' : '', 'non si può correggere il nome di un atleta (Dati → Rosa)'].filter(Boolean).join(', ')}. I dati intanto sono salvi. Incolla lo script nuovo, salva e fai Gestisci deployment → matita → Nuova versione.</p>` : ''}
     <p class="nota-piccola">L'app rilegge il foglio ogni minuto e quando la riapri. Quello che scrivi nel foglio (sedute, piano, gare) compare qui; appello, RPE e gare inserite qui finiscono nel foglio.</p>
     <p class="nota-piccola">Sito web (stessa app, si installa su Android e iPhone): <b>${esc(SITO_WEB.replace(/^https:\/\//, '').replace(/\/$/, ''))}</b>. Il link per lo staff apre il sito con l'indirizzo del foglio già scritto; la parola d'ordine dalla a parte.</p>
     <div class="azioni"><button type="button" class="btn" data-action="foglio-aggiorna">Aggiorna dal foglio</button><button type="button" class="btn" data-action="foglio-link">Link per lo staff</button><button type="button" class="btn pericolo" data-action="foglio-scollega">Scollega</button></div></section>`;
@@ -5365,6 +5794,8 @@ function render() {
   REGISTRO_GRAFICI.length = 0;
   const main = $('#vista');
   if (UI.caricamento) { main.innerHTML = '<section class="card"><p class="vuoto">Caricamento dei dati della squadra…</p></section>'; statoSync(); return; }
+  // sedute di gara: gare arrivate dal foglio o da un altro telefono, o diventate di oggi
+  if (sincronizzaGare() && !SYNC.solaLettura) salva();
   const M = costruisciModello();
   const v = (VISTE[UI.tab] || vistaGruppo)(M);
   main.innerHTML = v.html;
@@ -5448,6 +5879,8 @@ function legaEventi() {
       inp.value = ''; avviso(`Aggiunto ${n}`); aggiornaFiltri();
     }
     else if (az === 'rosa-togli') confermaDoppia(b, () => { const n = b.dataset.a; togliAtletaDa(DB, n); for (const d of new Set(DB.allenamenti.map(a => a.data))) sincronizzaSedute(d); if (UI.atleta === n) UI.atleta = ''; salva(); render(); avviso(`${n} tolto dalla rosa`); }, 'Confermi? Cancella anche i suoi dati');
+    else if (az === 'rosa-nome') { UI.rinomina = b.dataset.a; render(); const i = $('#rosaNome'); if (i) { i.focus(); i.select(); } }
+    else if (az === 'rosa-nome-annulla') { UI.rinomina = null; render(); }
     else if (az === 'rosa-rimetti') { const n = b.dataset.a; DB.rimossi = DB.rimossi.filter(r => r !== n); if (!DB.atleti.includes(n)) DB.atleti.push(n); salva(); render(); avviso(`${n} di nuovo in rosa`); }
     else if (az === 'esporta') esportaCSV(b.dataset.set);
     else if (az === 'backup') esportaBackup();
@@ -5476,6 +5909,7 @@ function legaEventi() {
   vista.addEventListener('submit', e => {
     const id = e.target.id, f = { formAll: salvaAllenamento, formManif: salvaManif, formGara: salvaRisultato }[id];
     if (f) { e.preventDefault(); f(); }
+    else if (e.target.dataset.rinomina != null) { e.preventDefault(); salvaNomeAtleta(e.target.dataset.rinomina); }
   });
   vista.addEventListener('toggle', e => { if (e.target.dataset?.rpeBox) UI.rpeAperto = e.target.open ? e.target.dataset.rpeBox : null; }, true);
   // import di file (in qualunque scheda)

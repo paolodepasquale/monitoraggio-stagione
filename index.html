@@ -720,6 +720,13 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
   .tab-prog .corto { display: inline; }
   .tab-prog th, .tab-prog td { padding: 5px 4px; }
 }
+/* programma gare letto da foto o PDF */
+.prog-leggi { margin: 0 0 10px; }
+.prog-letto { border: 1px solid var(--accent); border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; background: var(--surface-2); font-size: 14px; }
+.prog-letto details { margin-top: 6px; }
+.prog-letto summary { cursor: pointer; color: var(--ink-2); font-weight: 600; }
+.prog-img { display: block; max-width: 100%; max-height: 480px; margin: 8px 0; border: 1px solid var(--line); border-radius: 6px; object-fit: contain; background: #fff; }
+.prog-testo { white-space: pre-wrap; font-size: 12.5px; max-height: 260px; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin: 0; }
 
 </style>
 </head>
@@ -824,7 +831,7 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
    ===================================================================== */
 
 // data e ora della versione (la scrivono gli script di build): si legge in fondo a Dati
-const VERSIONE_APP = '20/10/2026 21:36';
+const VERSIONE_APP = '20/10/2026 21:52';
 
 /* ============================== 1. CONFIG ============================== */
 const CONFIG = {
@@ -4620,13 +4627,18 @@ function salvaRisultato() {
 function eventiManif(m, prog = programma(m)) {
   return ordinaGare(new Set([...GARE_COMUNI, ...Object.keys(prog), ...DB.gare.filter(g => g.manifId === m.id).map(g => g.gara), ...(UI.progExtra?.[m.id] || [])]));
 }
-function formProgramma(m) {
-  const sess = sessioniManif(m), eventi0 = programma(m);
-  // gare non ancora in programma ma con iscrizioni tutte nella stessa mezza giornata: si parte da lì
+// programma di partenza: quello salvato; le gare non ancora in programma ma con iscrizioni
+// tutte nella stessa mezza giornata partono da lì
+function progIniziale(m) {
+  const salvato = programma(m);
   const attuale = g => { const k = new Set(DB.gare.filter(x => x.manifId === m.id && x.gara === g).map(x => `${dataRis(x, m)}|${fasciaGara(x)}`)); return k.size === 1 ? [...k][0] : ''; };
-  const prog = UI.progBozza?.mid === m.id ? UI.progBozza.prog
-    : Object.fromEntries([...new Set([...Object.keys(eventi0), ...DB.gare.filter(x => x.manifId === m.id).map(x => x.gara)])].map(g => [g, eventi0[g] || attuale(g)]).filter(([, k]) => k));
+  return Object.fromEntries([...new Set([...Object.keys(salvato), ...DB.gare.filter(x => x.manifId === m.id).map(x => x.gara)])].map(g => [g, salvato[g] || attuale(g)]).filter(([, k]) => k));
+}
+function formProgramma(m) {
+  const sess = sessioniManif(m);
+  const prog = UI.progBozza?.mid === m.id ? UI.progBozza.prog : progIniziale(m);
   const eventi = eventiManif(m, prog);
+  const L = UI.progLettura?.mid === m.id ? UI.progLettura : null;
   const multi = giorniManif(m).length > 1;
   const iscr = g => DB.gare.filter(x => x.manifId === m.id && x.gara === g).length;
   const intest = sess.map(s => `<th class="num" scope="col">${multi ? `${GIORNI[giornoSett(s.d)]} ${toDate(s.d).getUTCDate()}<br>` : ''}<small><span class="lungo">${s.f.toLowerCase()}</span><span class="corto" aria-hidden="true">${s.f === 'Mattino' ? 'matt.' : 'pom.'}</span></small></th>`).join('');
@@ -4634,7 +4646,12 @@ function formProgramma(m) {
     <td class="num"><input type="radio" name="pg-${i}" data-gara="${esc(g)}" value="" ${prog[g] ? '' : 'checked'} aria-label="${esc(g)}: non in programma"></td>
     ${sess.map(s => `<td class="num"><input type="radio" name="pg-${i}" data-gara="${esc(g)}" value="${s.k}" ${prog[g] === s.k ? 'checked' : ''} aria-label="${esc(g)}: ${esc(etSessione(m, s))}"></td>`).join('')}</tr>`).join('');
   const n = Object.keys(prog).length;
+  const letto = L ? `<div class="prog-letto">
+      <p style="margin:0"><b>Letto da «${esc(L.file)}»:</b> ${L.n ? `${L.n} ${L.n === 1 ? 'gara' : 'gare'}${L.perSess.length ? ` (${L.perSess.map(x => `${esc(x.et)} ${x.n}`).join(', ')})` : ''}` : 'nessuna gara riconosciuta'}. ${L.n ? 'Controlla le spunte qui sotto e tocca «Salva il programma».' : 'Prova con una foto più nitida e dritta, o scegli le mezze giornate a mano.'}${L.n && !L.sessioniTrovate ? ' Nel testo non trovo mattino o pomeriggio: le gare lette sono tutte nella prima mezza giornata, sposta quelle del pomeriggio.' : ''}</p>
+      <details><summary>Immagine e testo letti</summary>${L.img ? `<img class="prog-img" src="${L.img}" alt="Programma gare letto">` : ''}<pre class="prog-testo">${esc(L.testo.trim() || '(nessun testo)')}</pre></details></div>` : '';
   return `<form id="formProg" class="form" novalidate>
+    <div class="azioni prog-leggi"><label class="btn file-btn" title="Foto, screenshot o PDF del programma gare: le gare vanno da sole nella loro mezza giornata">📷 Leggi il programma da foto o PDF<input type="file" id="pFoto" accept="image/*,application/pdf,.pdf"></label></div>
+    ${letto}
     <p class="nota-piccola" style="margin-top:0">Per ogni gara scegli la mezza giornata in cui si nuota (${n ? `${n} ${n === 1 ? 'gara' : 'gare'} in programma` : 'programma ancora vuoto'}). Le iscrizioni prendono giorno e mezza giornata da qui; se sposti una gara, si spostano anche le iscrizioni già fatte.</p>
     <div class="tbl-wrap"><table class="tab-prog"><thead><tr><th scope="col">Gara</th><th class="num" scope="col"><small><span class="lungo">non in<br>programma</span><span class="corto" aria-hidden="true">no</span></small></th>${intest}</tr></thead><tbody>${righe}</tbody></table></div>
     <div class="azioni"><input type="text" id="pNuova" placeholder="Altra gara, es. 4x50 MI" aria-label="Altra gara" style="flex:1 1 180px"><button type="button" class="btn piccolo" data-action="gr-prog-aggiungi">Aggiungi la gara</button></div>
@@ -4653,10 +4670,119 @@ function salvaProgramma() {
     const s = sessioneProgramma(m, g.gara);
     if (s && (dataRis(g, m) !== s.d || fasciaGara(g) !== s.f)) { g.data = s.d; g.fascia = s.f; spostate++; }
   }
-  UI.progBozza = null; if (UI.progExtra) delete UI.progExtra[m.id];
+  UI.progBozza = null; UI.progLettura = null; if (UI.progExtra) delete UI.progExtra[m.id];
   UI.gareModo = 'atleta';
   salvaGare(); render();
   avviso(`Programma salvato: ${Object.keys(prog).length} gare${spostate ? `, ${spostate} ${spostate === 1 ? 'iscrizione spostata' : 'iscrizioni spostate'}` : ''}. Ora le iscrizioni atleta per atleta`);
+}
+
+/* ---- programma gare da foto o PDF ---- */
+// Il testo si legge con Tesseract.js (immagini e PDF scansionati, in italiano) o con pdf.js (PDF con testo);
+// poi riga per riga: «mattino/pomeriggio», «1ª/2ª parte», gli orari (ore 15.30) e, se la manifestazione
+// dura più giorni, il giorno (sabato, 24/10, 2ª giornata) dicono dove vanno le gare che seguono.
+const TESSERACT = ['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js', 'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js'];
+let _tess = null;
+function caricaTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (_tess) return _tess;
+  const prova = i => new Promise((ok, ko) => {
+    const sc = document.createElement('script'); sc.src = TESSERACT[i]; sc.async = true;
+    sc.onload = () => (window.Tesseract ? ok(window.Tesseract) : ko(new Error('ocr')));
+    sc.onerror = () => { sc.remove(); ko(new Error('rete')); };
+    document.head.append(sc);
+  }).catch(e => (i + 1 < TESSERACT.length ? prova(i + 1) : Promise.reject(e)));
+  _tess = prova(0).catch(() => { _tess = null; throw new Error('Per leggere l\'immagine serve la connessione a internet (la prima volta si scarica il lettore di testo). Riprova con la rete.'); });
+  return _tess;
+}
+// immagine rimpicciolita (al massimo 2000 px): si legge più in fretta anche dalle foto del telefono
+async function canvasDaImmagine(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ko(new Error('Immagine non leggibile')); i.src = url; });
+    const k = Math.min(1, 2000 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  } finally { URL.revokeObjectURL(url); }
+}
+async function ocr(canvases, avanza) {
+  const T = await caricaTesseract();
+  const w = await T.createWorker('ita', 1, { logger: x => { if (x.status === 'recognizing text') avanza(x.progress); } });
+  try { let t = ''; for (const c of canvases) t += (await w.recognize(c)).data.text + '\n'; return t; }
+  finally { try { await w.terminate(); } catch (e) { /* già chiuso */ } }
+}
+// PDF: il testo se c'è, altrimenti le pagine (al massimo 3) disegnate e lette come immagini
+async function testoDaPdf(file, avanza) {
+  const righe = await righePdf(file);
+  if (righe.join(' ').replace(/\s/g, '').length >= 40) return { testo: righe.join('\n'), img: '' };
+  const L = await caricaPdfJs();
+  const doc = await L.getDocument({ data: new Uint8Array(await file.arrayBuffer()), isEvalSupported: false }).promise;
+  const pagine = [];
+  for (let p = 1; p <= Math.min(3, doc.numPages); p++) {
+    const pg = await doc.getPage(p), v = pg.getViewport({ scale: 2 });
+    const c = document.createElement('canvas'); c.width = v.width; c.height = v.height;
+    await pg.render({ canvasContext: c.getContext('2d'), viewport: v }).promise;
+    pagine.push(c);
+  }
+  return { testo: await ocr(pagine, avanza), img: pagine[0]?.toDataURL('image/jpeg', 0.7) || '' };
+}
+// i numeri letti male (5O, l00, S0) tornano numeri
+const numeriOcr = t => t.replace(/\b[0-9oOlIS|]{2,4}\b/g, w => (/\d/.test(w) && /^[0-9oOlIS|]+$/.test(w) ? w.replace(/[oO]/g, '0').replace(/[lI|]/g, '1').replace(/S/g, '5') : w));
+const RE_GARA_PROG = /\b(4\s*x\s*(?:50|100|200)|25|50|100|200|400|800|1500)\s*(?:m|mt|metri)?\s*\.?\s*(stile\s*libero|stile|s\s*\.?\s*l\b\.?|sl\b|free(?:style)?|dorso|do\b|back(?:stroke)?|rana|ra\b|breast(?:stroke)?|farfalla|delfino|fa\b|butterfly|fly\b|misti|mista|mx\b|mi\b|im\b|medley)/g;
+const STILE_PROG = s => { s = s.replace(/[\s.]/g, ''); return /^(stile|sl|free)/.test(s) ? 'SL' : /^(dorso|do|back)/.test(s) ? 'DO' : /^(rana|ra|breast)/.test(s) ? 'RA' : /^(farfalla|delfino|fa|butter|fly)/.test(s) ? 'FA' : 'MI'; };
+const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+function programmaDaTesto(testo, m) {
+  const giorni = giorniManif(m), multi = giorni.length > 1;
+  let giorno = giorni[0], fascia = 'Mattino', sessioniTrovate = false;
+  const prog = {};
+  for (const grezza of String(testo).split(/\n+/)) {
+    const t = numeriOcr(grezza).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[’']/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!t) continue;
+    if (multi) {   // giorno: nome del giorno, data o «2a giornata»
+      const gs = ['lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica'].findIndex(x => new RegExp(`\\b${x}\\b`).test(t));
+      const dm = t.match(/\b(\d{1,2})\s*[/.-]\s*(\d{1,2})\b/), dl = t.match(new RegExp(`\\b(\\d{1,2})\\s+(${MESI_LUNGHI.join('|')})`));
+      const gn = t.match(/\b([1-9])\s*[aª°o]?\s*giornata\b|\b(prima|seconda|terza)\s+giornata\b/);
+      let d = null;
+      if (dl) d = giorni.find(x => toDate(x).getUTCDate() === Number(dl[1]) && toDate(x).getUTCMonth() === MESI_LUNGHI.indexOf(dl[2]));
+      if (!d && dm && Number(dm[2]) <= 12) d = giorni.find(x => toDate(x).getUTCDate() === Number(dm[1]) && toDate(x).getUTCMonth() + 1 === Number(dm[2]));
+      if (!d && gs >= 0) d = giorni.find(x => giornoSett(x) === gs);
+      if (!d && gn) d = giorni[(gn[1] ? Number(gn[1]) : ['prima', 'seconda', 'terza'].indexOf(gn[2]) + 1) - 1];
+      if (d && d !== giorno) { giorno = d; fascia = 'Mattino'; }
+    }
+    // mezza giornata: parole, «1a/2a parte», oppure l'orario (dalle 13 è pomeriggio)
+    if (/mattin|antimerid|\b(1|i|prima)\s*[aª°]?\s*(parte|sessione|turno|semitappa)\b/.test(t)) { fascia = 'Mattino'; sessioniTrovate = true; }
+    else if (/pomerig|pomerid|\bsera(le)?\b|\b(2|ii|seconda)\s*[aª°]?\s*(parte|sessione|turno|semitappa)\b/.test(t)) { fascia = 'Pomeriggio'; sessioniTrovate = true; }
+    else {
+      const o = t.match(/\b(?:ore|h)\s*(\d{1,2})(?:\s*[:.,]\s*\d{2})?\b/) || (/riscald|inizio|partenza|apertura/.test(t) ? t.match(/\b(\d{1,2})\s*[:.]\s*\d{2}\b/) : null);
+      if (o && Number(o[1]) <= 23) { fascia = Number(o[1]) >= 13 ? 'Pomeriggio' : 'Mattino'; sessioniTrovate = true; }
+    }
+    for (const x of t.matchAll(RE_GARA_PROG)) {
+      const dist = x[1].replace(/\s/g, ''), gara = normGara(`${dist} ${STILE_PROG(x[2])}`);
+      if (!prog[gara]) prog[gara] = `${giorno}|${fascia}`;   // la prima volta che compare (batterie prima delle finali)
+    }
+  }
+  return { prog, sessioniTrovate };
+}
+async function leggiProgrammaFile(file) {
+  const m = DB.manifestazioni.find(x => x.id === UI.manifSel);
+  if (!file || !m) return;
+  let ultimo = -1;
+  const avanza = p => { const v = Math.round(p * 100); if (v >= ultimo + 10 || v === 100) { ultimo = v; avviso(`Leggo il programma… ${v} %`); } };
+  avviso('Leggo il programma…');
+  try {
+    const pdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
+    let testo, img = '';
+    if (pdf) ({ testo, img } = await testoDaPdf(file, avanza));
+    else { const c = await canvasDaImmagine(file); img = c.toDataURL('image/jpeg', 0.7); testo = await ocr([c], avanza); }
+    const { prog, sessioniTrovate } = programmaDaTesto(testo, m);
+    const base = UI.progBozza?.mid === m.id ? UI.progBozza.prog : progIniziale(m);
+    UI.progBozza = { mid: m.id, prog: { ...base, ...prog } };
+    const perSess = sessioniManif(m).map(s => ({ et: etSessione(m, s).toLowerCase(), n: Object.values(prog).filter(k => k === s.k).length })).filter(x => x.n);
+    UI.progLettura = { mid: m.id, file: file.name || 'immagine', img, testo, n: Object.keys(prog).length, perSess, sessioniTrovate };
+    UI.gareModo = 'programma';
+    render(); $('#secGareIns')?.scrollIntoView({ block: 'start' });
+    avviso(Object.keys(prog).length ? `Programma letto: ${Object.keys(prog).length} gare. Controlla e salva` : 'Non riconosco gare nell\'immagine');
+  } catch (e) { avviso(e.message || 'File non leggibile'); }
 }
 
 /* ---- iscrizioni e tempi, atleta per atleta ---- */
@@ -4771,6 +4897,7 @@ function azioneGare(az, b) {
   }
 }
 function cambioGare(el) {
+  if (el.id === 'pFoto') { const f = el.files?.[0]; el.value = ''; if (f) { UI.progBozza = { mid: UI.manifSel, prog: leggiProgramma() }; leggiProgrammaFile(f); } return true; }
   if (el.id === 'gPdf') { const f = el.files?.[0]; el.value = ''; if (f && salvaIscrizioni()) apriPdfIscrizioni(f); return true; }
   if (el.closest?.('#pdfIscr')) { leggiSceltePdf(); render(); return true; }
   if (el.id === 'gManif') { if (UI.gareModo !== 'programma' && !salvaIscrizioni()) { el.value = UI.manifSel; return true; } UI.manifSel = el.value; UI.garaModifica = null; UI.progBozza = null; render(); return true; }
@@ -4868,7 +4995,7 @@ function leggiIscrittiFin(righe) {
 }
 // atleta della rosa per cognome e nomi scritti a parte (anche cognomi di due parole, secondi nomi, accenti)
 function atletaDaCognomeNome(cognome, nomi, rosa = elencoAtleti()) {
-  const n = x => String(x || '').normalize('NFD').replace(/[̀-ͯ'’]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f'’]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
   const cog = n(cognome), nom = n(nomi).split(' ')[0] || '';
   const diretto = atletaDaNome(`${cognome} ${nomi}`, rosa) || atletaDaNome(`${cognome} ${nom}`, rosa);
   if (diretto) return diretto;

@@ -823,6 +823,9 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
      c) aggiungi la spiegazione in TIP (sezione 1).
    ===================================================================== */
 
+// data e ora della versione (la scrivono gli script di build): si legge in fondo a Dati
+const VERSIONE_APP = '20/10/2026 21:36';
+
 /* ============================== 1. CONFIG ============================== */
 const CONFIG = {
   // Zone d'intensità: codice italiano (A1…C2) ↔ zona Z1–Z5 (C1 e C2 formano Z5)
@@ -5126,7 +5129,8 @@ function vistaDati(M) {
       <div class="tbl-wrap"><table><thead><tr><th>Data</th><th>Atleta</th><th>Tipo</th><th class="num">Durata</th><th class="num">RPE</th><th class="num">UA</th><th class="num">Metri</th><th>Zone</th><th>Attrezzi</th><th>Note</th><th></th></tr></thead>
       <tbody>${righeSed || '<tr><td colspan="11">Nessuna seduta con questi filtri.</td></tr>'}</tbody></table></div>
       ${filtrate.length > mostrate.length ? `<div class="azioni" style="margin-top:12px"><button type="button" class="btn" data-action="altre-sedute">Mostra altre ${Math.min(40, filtrate.length - mostrate.length)}</button></div>` : ''}
-    </section>`;
+    </section>
+    <p class="nota-piccola versione-app">Versione dell'app: <b>${esc(VERSIONE_APP)}</b></p>`;
   return { html, dopo: legaDati };
 }
 

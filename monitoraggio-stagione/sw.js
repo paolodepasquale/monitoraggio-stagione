@@ -3,7 +3,7 @@
    se la rete manca o è troppo lenta (oltre 4 secondi) si usa la copia in memoria.
    Icone e manifest: dalla copia in memoria, aggiornata in sottofondo.
    VERSIONE cambia a ogni pubblicazione (la calcola build_github.py): le cache vecchie si cancellano. */
-const VERSIONE = 'swimbrain-e4ffac8404';
+const VERSIONE = 'swimbrain-709a4ae7bf';
 const FILE = ['./', './index.html', './manifest.json', './icona-180.png', './icona-192.png', './icona-512.png', './icona-512-maskable.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSIONE).then(c => c.addAll(FILE.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));

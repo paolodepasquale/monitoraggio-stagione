@@ -728,6 +728,105 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
 .prog-img { display: block; max-width: 100%; max-height: 480px; margin: 8px 0; border: 1px solid var(--line); border-radius: 6px; object-fit: contain; background: #fff; }
 .prog-testo { white-space: pre-wrap; font-size: 12.5px; max-height: 260px; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin: 0; }
 
+
+/* ---------- gare: sezioni, manifestazione in tre passi, tempi corretti sul posto, trend dell'atleta ---------- */
+.vh { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.gare-vista { margin-left: auto; }
+.gare-vista button { padding: 8px 14px; }
+.manif-scelta { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 10px; }
+.manif-scelta > .campo { flex: 1 1 300px; min-width: 0; }
+.manif-scelta > .azioni { margin: 0; }
+.manif-info { margin: 8px 0 0; }
+.inizio-pdf { margin-top: 10px; align-items: center; }
+.inizio-pdf .nota-piccola { flex-basis: 100%; margin: 0; }
+.passi-gara { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; margin: 14px 0 0; }
+.passo-gara { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface-2); }
+.passo-gara h4 { margin: 0; display: flex; align-items: center; gap: 8px; font: 600 17px var(--font-cond); letter-spacing: 0.03em; text-transform: uppercase; }
+.pg-num { flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--surface); font: 700 14px var(--font); }
+.passo-gara.fatto .pg-num { background: var(--good-ink); }
+.pg-stato { flex: 1 1 auto; margin: 0; font-size: 14px; color: var(--ink-2); }
+.pg-az { display: flex; flex-wrap: wrap; gap: 6px; }
+.pg-az .file-btn { flex: 1 1 auto; justify-content: center; }
+.pg-az .btn[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.pannello-gara { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; scroll-margin-top: 12px; }
+.pg-titolo { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.pg-titolo h4 { margin: 0; }
+.tab-tempi td { vertical-align: middle; }
+.tab-tempi .t-gara { white-space: normal; min-width: 90px; }
+.tab-tempi .t-tempo, .tab-pdf-ris .pr-tempo, .isc-tempo { font: 600 17px var(--font-cond); letter-spacing: 0.02em; }
+.tab-tempi .t-tempo, .tab-pdf-ris .pr-tempo { width: 104px; text-align: right; }
+.tab-tempi .t-pos, .tab-pdf-ris .pr-pos { width: 58px; text-align: right; }
+.tab-tempi tr.iscr .t-tempo { background: var(--surface-2); }
+.tab-tempi input.errato, .tab-pdf-ris input.errato { border-color: var(--bad-ink); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bad-ink) 25%, transparent); }
+.tab-tempi input.salvato { border-color: var(--good-ink); box-shadow: 0 0 0 2px color-mix(in srgb, var(--good-ink) 22%, transparent); }
+.note-breve { display: inline-block; max-width: 260px; color: var(--muted); font-size: 12.5px; line-height: 1.3; white-space: normal; }
+.elenco-manif { list-style: none; margin: 0; padding: 0; }
+.riga-manif { width: 100%; min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--grid); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.riga-manif:hover { background: var(--hover); }
+.rm-data { flex: none; width: 104px; font: 600 14px var(--font-cond); color: var(--ink-2); }
+.rm-nome { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+.rm-nome small { display: block; font-weight: 400; font-size: 13px; color: var(--muted); }
+.rm-va { color: var(--muted); font-size: 20px; }
+.tab-pdf-ris td { vertical-align: middle; }
+.tab-pdf-ris tr.spento td:not(:first-child) { opacity: 0.5; }
+.tab-pdf-ris input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); }
+.avviso-pic { color: var(--warn-ink); font-weight: 600; }
+.trend-ctrl { margin: 0; }
+.trend-ctrl .campo { flex: 1 1 200px; }
+.trend-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px; }
+.trend-carta { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.trend-carta:hover { background: var(--hover); }
+.trend-carta.sel { border: 2px solid var(--accent); padding: 9px 11px; }
+.tc-testa { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.tc-testa b { font: 700 19px var(--font-cond); letter-spacing: 0.02em; }
+.tc-testa small { font-size: 12.5px; color: var(--muted); }
+.spark { display: block; width: 100%; max-width: 260px; height: auto; }
+.tc-num { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.tc-num small { display: block; font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.tc-num b { font: 600 17px var(--font-cond); }
+.tc-num .meglio b, .tc-pb .meglio { color: var(--good-ink); }
+.tc-num .peggio b { color: var(--bad-ink); }
+.tc-pb { font-size: 12.5px; color: var(--ink-2); }
+.tab-trend td { white-space: normal; }
+@media (max-width: 560px) {
+  .gare-vista { margin-left: 0; width: 100%; }
+  .gare-vista button { flex: 1 1 0; }
+  .rm-data { width: 84px; font-size: 13px; }
+  .tab-tempi th, .tab-tempi td { padding-left: 4px; padding-right: 4px; }
+  .tab-tempi .t-tempo, .tab-pdf-ris .pr-tempo { width: 92px; }
+}
+
+@media (max-width: 560px) {
+  .kpi-gare { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-gare .kpi { padding: 12px 12px 14px; }
+  .kpi-gare .kpi .val { font-size: 30px; }
+  .kpi-gare .kpi .det { font-size: 13px; }
+  /* tempi: ogni gara su due righe (atleta, tempo, posizione / gara, confronto), senza scorrere di lato */
+  .tab-tempi thead { display: none; }
+  .tab-tempi, .tab-tempi tbody { display: block; width: 100%; }
+  .tab-tempi tr { display: grid; grid-template-columns: minmax(0, 1fr) 92px 50px 34px; grid-template-areas: "atl tempo pos az" "gara conf conf az"; align-items: center; gap: 4px 6px; padding: 8px 0; border-bottom: 1px solid var(--grid); }
+  .tab-tempi tr.riga-giorno { display: block; padding: 0; border: 0; }
+  .tab-tempi tr.riga-giorno th { display: block; padding: 14px 0 6px; }
+  .tab-tempi td { display: block; padding: 0; border: 0; min-width: 0; white-space: normal; }
+  .tab-tempi td.nome-atl { grid-area: atl; }
+  .tab-tempi td.t-gara { grid-area: gara; font-size: 14px; color: var(--ink-2); }
+  .tab-tempi td.t-tc { grid-area: tempo; }
+  .tab-tempi td.t-pc { grid-area: pos; }
+  .tab-tempi td.t-conf { grid-area: conf; justify-self: end; text-align: right; font-size: 13px; }
+  .tab-tempi td.riga-az { grid-area: az; display: flex; flex-direction: column; align-items: center; }
+  .tab-tempi .t-tempo, .tab-tempi .t-pos { width: 100%; }
+  .pdf-iscr { padding: 12px 10px; }
+  .tab-pdf-ris thead { display: none; }
+  .tab-pdf-ris, .tab-pdf-ris tbody { display: block; width: 100%; }
+  .tab-pdf-ris tr { display: grid; grid-template-columns: 26px minmax(0, 1fr) 90px 48px; grid-template-areas: "ck atl tempo pos" "ck gara gara gara"; align-items: center; gap: 2px 6px; padding: 8px 0; border-bottom: 1px solid var(--grid); }
+  .tab-pdf-ris td { display: block; padding: 0; border: 0; min-width: 0; white-space: normal; }
+  .tab-pdf-ris td.pr-ck { grid-area: ck; }
+  .tab-pdf-ris td.nome-atl { grid-area: atl; }
+  .tab-pdf-ris td.pr-gara { grid-area: gara; font-size: 14px; color: var(--ink-2); }
+  .tab-pdf-ris td.pr-tc { grid-area: tempo; }
+  .tab-pdf-ris td.pr-pc { grid-area: pos; }
+  .tab-pdf-ris .pr-tempo, .tab-pdf-ris .pr-pos { width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -831,7 +930,7 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
    ===================================================================== */
 
 // data e ora della versione (la scrivono gli script di build): si legge in fondo a Dati
-const VERSIONE_APP = '20/10/2026 21:52';
+const VERSIONE_APP = '27/10/2026 05:50';
 
 /* ============================== 1. CONFIG ============================== */
 const CONFIG = {
@@ -1419,6 +1518,37 @@ const fasciaGara = g => fasciaDa(g?.fascia);
 const idGara = (mid, d, f = 'Mattino') => `gara:${mid}:${d}:${f}`;
 const eGaraId = id => String(id || '').startsWith('gara:');
 const conTempo = g => g.tempo != null && g.tempo > 0;
+// esito senza tempo: squalificato, assente (non partito), ritirato; senza tempo né esito è un'iscrizione
+const ESITI_GARA = { SQ: 'squalificato', ASS: 'assente', RIT: 'ritirato' };
+function esitoDa(v) {
+  const s = String(v ?? '').trim().toUpperCase().replace(/[.\s]+$/, '').replace(/\s+/g, ' ');
+  if (/^(SQ|SQU|SQUAL|SQUALIFICAT[OAI]|DSQ|DQ)$/.test(s)) return 'SQ';
+  if (/^(ASS|ASSENTE|AS|NP|N\.P|NON PARTIT[OAI]|DNS)$/.test(s)) return 'ASS';
+  if (/^(RIT|RITIRAT[OAI]|DNF)$/.test(s)) return 'RIT';
+  return null;
+}
+const iscrizione = g => !conTempo(g) && !g.esito;
+const garaNuotata = g => g.esito !== 'ASS';   // chi era assente non ha fatto la gara (né il suo carico)
+// Tempo di gara scritto come viene, anche con la tastiera completa del telefono:
+// 1'02"35 · 1'02.35 · 1:02.35 · 1.02.35 · 1,02,35 · 1 02 35 · 1:02:35 · 62,35 · 28.45 · 10235 (cifre di fila: 1'02"35)
+function parseTempoGara(v) {
+  let s = String(v ?? '').trim().toLowerCase().replace(/\s*(s|sec|secondi)\.?$/, '');
+  if (!s) return null;
+  s = s.replace(/[’'′`´]/g, ':').replace(/[″"”“]/g, '.').replace(/\s+/g, ' ').replace(/\s*([:.,])\s*/g, '$1').replace(/([:.,])\1+/g, '$1');
+  let m = s.match(/^(\d{1,2})[:., ](\d{2})[.,: ](\d{1,2})$/);
+  if (m) return Number(m[2]) < 60 ? Math.round((Number(m[1]) * 60 + Number(m[2]) + Number(m[3].padEnd(2, '0')) / 100) * 100) / 100 : null;
+  if (/^\d{4,6}$/.test(s)) {
+    const c = Number(s.slice(-2)), sec = Number(s.slice(-4, -2)), min = Number(s.slice(0, -4) || 0);
+    if (sec < 60) return Math.round((min * 60 + sec + c / 100) * 100) / 100;
+    return min ? null : Math.round((sec + c / 100) * 100) / 100;   // 6235 → 62"35
+  }
+  m = s.match(/^(\d{1,2})[.,](\d{2})$/);   // 1.02 o 1,02: sotto i 15 secondi non c'è gara, sono minuti e secondi
+  if (m && Number(m[1]) * 1 + Number(m[2]) / 100 < 15 && Number(m[2]) < 60) return Number(m[1]) * 60 + Number(m[2]);
+  const t = parseTempo(s);
+  return t > 0 && t < 7200 ? Math.round(t * 100) / 100 : null;
+}
+// valore da mostrare nel campo del tempo: il tempo, l'esito (SQ, ASS, RIT) o niente
+const valoreTempo = g => (conTempo(g) ? fmtTempo(g.tempo) : g.esito || '');
 function distanzaGara(gara) {
   const t = String(gara || '').toUpperCase().trim();
   const st = t.match(/^(\d+)\s*[X×]\s*(\d+)/);   // staffetta (4x50 SL): ognuno nuota una frazione
@@ -1447,7 +1577,7 @@ function caricoGara(gare, m) {
 // Una mezza giornata di gare di una manifestazione, come un allenamento per chi gareggia (atleti):
 // per = carico di ogni atleta; manif distingue questi lavori dagli allenamenti scritti in Giornata
 function lavoroGara(m, d, fascia = 'Mattino', ris = null, sessioni = 1) {
-  ris = ris || (DB.gare || []).filter(g => g.manifId === m.id && giornoGara(g, m) === d && fasciaGara(g) === fascia);
+  ris = (ris || (DB.gare || []).filter(g => g.manifId === m.id && giornoGara(g, m) === d && fasciaGara(g) === fascia)).filter(garaNuotata);
   const perA = new Map();
   for (const g of ris) { if (!perA.has(g.atleta)) perA.set(g.atleta, []); perA.get(g.atleta).push(g); }
   const giorni = giorniManif(m);
@@ -1457,7 +1587,7 @@ function lavoroGara(m, d, fascia = 'Mattino', ris = null, sessioni = 1) {
 }
 // mezze giornate di gare di una manifestazione in un giorno (una sola, vuota, se nessuno gareggia)
 function lavoriGara(m, d) {
-  const ris = (DB.gare || []).filter(g => g.manifId === m.id && giornoGara(g, m) === d);
+  const ris = (DB.gare || []).filter(g => g.manifId === m.id && giornoGara(g, m) === d && garaNuotata(g));
   const fasce = FASCE_GARA.filter(f => ris.some(g => fasciaGara(g) === f));
   if (!fasce.length) return [lavoroGara(m, d, 'Mattino', [], 1)];
   return fasce.map(f => lavoroGara(m, d, f, ris.filter(g => fasciaGara(g) === f), fasce.length));
@@ -3386,7 +3516,7 @@ function vistaGiornata() {
 }
 
 /* ---- giornata di gara: la scheda della gara come allenamento di chi gareggia ---- */
-const elencoGareAtleta = l => l.slice().sort((a, b) => ordineGara(a.gara) - ordineGara(b.gara)).map(g => `${esc(g.gara)} <span class="${conTempo(g) ? 'tempo' : 'muto'}">${conTempo(g) ? fmtTempo(g.tempo) : 'iscritto'}</span>`).join(' · ');
+const elencoGareAtleta = l => l.slice().sort((a, b) => ordineGara(a.gara) - ordineGara(b.gara)).map(g => `${esc(g.gara)} <span class="${conTempo(g) ? 'tempo' : 'muto'}">${conTempo(g) ? fmtTempo(g.tempo) : g.esito ? ESITI_GARA[g.esito] : 'iscritto'}</span>`).join(' · ');
 function cartaGara(x) {
   const m = x.manif, p = parGara(m), n = x.atleti.length, futuro = x.data > oggiStr();
   const testa = `<div class="al-top"><h4>🏁 ${esc(m.nome)}${n ? ` <span class="gara-giorno">${x.fascia}</span>` : ''}${x.nGiorni > 1 ? ` <span class="gara-giorno">${x.giorno}° giorno di ${x.nGiorni}</span>` : ''}${n && x.atleti.some(a => !garaSvolta(x, a)) ? ' <span class="badge-prog">Programmata</span>' : ''}</h4>
@@ -4411,28 +4541,46 @@ function chipPersonale(a) {
   return `<span class="sotto-pb">${segno(a.delta, 2)} s dal personale</span>`;
 }
 
+// stagione sportiva: dal 1° settembre al 31 agosto («2026/27»)
+function stagioneDi(d) { const y = Number(String(d).slice(0, 4)), a = Number(String(d).slice(5, 7)) >= 9 ? y : y - 1; return stagioneDaChiave(`${a}/${String(a + 1).slice(-2)}`); }
+function stagioneDaChiave(k) { const a = Number(String(k).slice(0, 4)); return { k, da: `${a}-09-01`, a: `${a + 1}-08-31` }; }
+const plur = (n, uno, tanti) => `${num(n)} ${n === 1 ? uno : tanti}`;
+// stato di un risultato rispetto al personale (o il suo esito, o «iscritto»)
+const confronto = (g, a) => (g.esito ? `<span class="stato stabile">${ESITI_GARA[g.esito]}</span>` : conTempo(g) ? chipPersonale(a) : '<span class="muto">iscritto</span>');
+const fileBtn = (id, testo, accept, titolo) => `<label class="btn file-btn" title="${esc(titolo)}"><span aria-hidden="true">📄</span> ${testo}<input type="file" id="${id}" accept="${accept}"></label>`;
+const BTN_PDF_ISCR = () => fileBtn('gPdf', 'PDF iscrizioni', 'application/pdf,.pdf', 'Elenco «iscritti società» della FIN (portale Coninet)');
+const BTN_PDF_RIS = () => fileBtn('gRisPdf', 'PDF risultati', 'application/pdf,.pdf,image/*', 'Risultati completi della manifestazione: si prendono gli atleti della squadra');
+
+// Gare: due sezioni. «Manifestazioni»: scegli la manifestazione e caricala in tre passi
+// (iscrizioni, ordine gare, risultati), poi correggi i tempi nella tabella. «Atleta»: il trend di ogni gara nella stagione.
 function vistaGare() {
-  const piano = mappaPiano(), atleti = elencoAtleti(), mp = manifPerId(), A = analisiGare(), PB = personalBest();
+  const sezA = UI.gareVista === 'atleta';
+  const seg = `<div class="seg gare-vista" role="group" aria-label="Sezione delle gare">${[['manif', 'Manifestazioni'], ['atleta', 'Atleta · trend']].map(([k, t]) => `<button type="button" data-action="gr-vista" data-v="${k}" aria-pressed="${(k === 'atleta') === sezA}">${t}</button>`).join('')}</div>`;
+  const r = sezA ? vistaTrendAtleta() : vistaManifestazioni();
+  return { html: `<div class="view-head"><h2>Gare</h2>${seg}</div>` + r.html, dopo: r.dopo };
+}
+
+function vistaManifestazioni() {
+  const piano = mappaPiano(), atleti = elencoAtleti(), mp = manifPerId(), A = analisiGare();
   const tutte = ordManif();
   if (UI.manifSel && !mp.has(UI.manifSel)) UI.manifSel = '';
   if (!UI.manifSel && tutte.length) UI.manifSel = tutte[0].id;
+  const ms = mp.get(UI.manifSel) || null;
   const manifVisibile = m => giorniManif(m).some(d => dataVisibile(d, piano));
-  const visibile = g => { const m = mp.get(g.manifId); return m && manifVisibile(m) && atleti.includes(g.atleta) && (!UI.atleta || g.atleta === UI.atleta); };
-  const tuttiVisibili = DB.gare.filter(visibile);
-  const gareVis = tuttiVisibili.filter(conTempo), iscrVis = tuttiVisibili.length - gareVis.length;
+  const filtro = g => atleti.includes(g.atleta) && (!UI.atleta || g.atleta === UI.atleta);
+  const tuttiVisibili = DB.gare.filter(g => { const m = mp.get(g.manifId); return m && manifVisibile(m) && filtro(g); });
+  const gareVis = tuttiVisibili.filter(conTempo);
   const manifVis = tutte.filter(m => manifVisibile(m) && (!UI.atleta || tuttiVisibili.some(g => g.manifId === m.id)));
   const pbVis = gareVis.filter(g => A.get(g.id)?.stato === 'pb');
   const migl = pbVis.map(g => { const a = A.get(g.id); return ((a.prec - g.tempo) / a.prec) * 100; });
-
-  const head = `<div class="view-head"><h2>Gare</h2><span class="nota">${UI.atleta ? esc(UI.atleta) + ' · ' : ''}manifestazioni del periodo selezionato</span></div>`;
-  const kpis = DB.gare.length ? `<div class="kpi-strip">
-    ${kpi('Manifestazioni', null, num(manifVis.length), '', manifVis[0] ? `ultima: ${esc(manifVis[0].nome)}, ${fmtPeriodoBreve(manifVis[0])}` : 'nessuna nel periodo')}
-    ${kpi('Gare nuotate', null, num(gareVis.length), '', `${num(new Set(gareVis.map(g => g.atleta)).size)} atleti${iscrVis ? ` · ${num(iscrVis)} ${iscrVis === 1 ? 'iscrizione' : 'iscrizioni'} senza tempo` : ''}`)}
+  const kpis = DB.gare.length ? `<div class="kpi-strip kpi-gare">
+    ${kpi('Manifestazioni', null, num(manifVis.length), '', manifVis[0] ? `ultima: ${esc(manifVis[0].nome)}, ${fmtPeriodoBreve(manifVis[0])}` : 'nessuna nel periodo selezionato')}
+    ${kpi('Gare nuotate', null, num(gareVis.length), '', `${plur(new Set(gareVis.map(g => g.atleta)).size, 'atleta', 'atleti')}${UI.atleta ? '' : ' della rosa'}`)}
     ${kpi('Personali migliorati', null, num(pbVis.length), gareVis.length ? `su ${num(gareVis.filter(g => A.get(g.id)?.stato !== 'primo').length)}` : '', 'rispetto al miglior tempo precedente, stessa vasca')}
     ${kpi('Miglioramento mediano', null, migl.length ? perc(mediana(migl), 1) : '—', '', 'sui personali migliorati')}
   </div>` : '';
 
-  // --- inserimento ---
+  // --- manifestazione: scelta, nuova o modifica ---
   const nuovaAperta = UI.manifForm || !tutte.length;
   const mf = UI.manifForm && UI.manifForm !== 'nuova' ? mp.get(UI.manifForm) : null;
   const formManif = nuovaAperta ? `<form id="formManif" class="form sotto-form" novalidate>
@@ -4452,109 +4600,229 @@ function vistaGare() {
           <label class="campo">RPE prevista<select id="mRpe">${opt('', mf?.rpe ?? '', `— (${CONFIG.gara.rpe})`)}${RPE_SCALA.map((x, i) => opt(i, mf?.rpe ?? '', x)).join('')}</select></label>
         </div></details>
       <div class="azioni"><button type="submit" class="btn primario">${mf ? 'Salva modifiche' : 'Crea manifestazione'}</button>${tutte.length ? '<button type="button" class="btn" data-action="gr-annulla-manif">Annulla</button>' : ''}<span class="esito" id="mEsito" role="status"></span></div>
-    </form>` : '';
+    </form>
+    ${tutte.length ? '' : `<div class="azioni inizio-pdf"><span class="nota-piccola">Oppure parti da un PDF: la manifestazione si crea da sola.</span>${BTN_PDF_ISCR()}${BTN_PDF_RIS()}</div>`}` : '';
+  const scelta = tutte.length ? `<div class="manif-scelta">
+      <label class="campo">Manifestazione<select id="gManif">${tutte.map(m => opt(m.id, UI.manifSel, `${fmtPeriodoBreve(m)} · ${m.nome} · ${m.vasca} m`)).join('')}</select></label>
+      <div class="azioni"><button type="button" class="btn" data-action="gr-nuova-manif">Nuova</button>${ms ? `<button type="button" class="btn" data-action="gr-modifica-manif" data-id="${ms.id}">Modifica</button><button type="button" class="btn-x" data-action="gr-elimina-manif" data-id="${ms.id}" aria-label="Elimina la manifestazione con i suoi risultati">✕</button>` : ''}</div></div>` : '';
+
+  // --- la manifestazione scelta: dati, carico, i tre passi ---
+  const rM = ms ? DB.gare.filter(g => g.manifId === ms.id && atleti.includes(g.atleta)) : [];
+  let info = '';
+  if (ms) {
+    const giorni = giorniManif(ms);
+    const nPb = rM.filter(g => A.get(g.id)?.stato === 'pb').length, podi = rM.filter(g => g.posizione && g.posizione <= 3).length;
+    const perAtl = new Map(); let nSess = 0;
+    for (const d of giorni) for (const x of lavoriGara(ms, d)) { if (x.atleti.length) nSess++; for (const [a, c] of x.per) { const t = perAtl.get(a) || { metri: 0, ua: 0 }; t.metri += c.metri; t.ua += c.durata * x.rpeTarget; perAtl.set(a, t); } }
+    info = `<p class="nota manif-info">${fmtPeriodoManif(ms)}${giorni.length > 1 ? ` (${giorni.length} giorni)` : ''}${ms.luogo ? ' · ' + esc(ms.luogo) : ''} · vasca ${ms.vasca} m${nPb ? ` · ${plur(nPb, 'personale', 'personali')}` : ''}${podi ? ` · ${plur(podi, 'podio', 'podi')}` : ''}</p>
+      ${perAtl.size ? `<p class="nota-piccola" style="margin:2px 0 0">Come allenamento: ${num(media([...perAtl.values()].map(t => t.metri)))} m e ${num(media([...perAtl.values()].map(t => t.ua)))} UA per atleta in gara${nSess > 1 ? ` (${nSess} mezze giornate)` : ''}${giorni.some(d => d >= oggiStr()) ? ' · i giorni da fare contano come programmati' : ''}</p>` : ''}`;
+  }
+  const prog = ms ? programma(ms) : {}, nProg = Object.keys(prog).length, nSessProg = new Set(Object.values(prog)).size;
+  const nAtl = new Set(rM.map(g => g.atleta)).size, nT = rM.filter(conTempo).length, nEs = rM.filter(g => g.esito).length;
+  const passo = (n, titolo, fatto, stato, file, modo) => `<div class="passo-gara${fatto ? ' fatto' : ''}">
+      <h4><span class="pg-num" aria-hidden="true">${fatto ? '✓' : n}</span>${titolo}</h4>
+      <p class="pg-stato">${stato}</p>
+      <div class="pg-az">${file}<button type="button" class="btn piccolo" data-action="gr-modo" data-modo="${modo}" aria-pressed="${UI.gareModo === modo && !UI.pdfIscr && !UI.pdfRis}">A mano</button></div></div>`;
+  const passi = ms && !nuovaAperta ? `<div class="passi-gara">
+    ${passo(1, 'Iscrizioni', rM.length > 0, rM.length ? `${plur(nAtl, 'atleta', 'atleti')} · ${plur(rM.length, 'gara', 'gare')}` : 'Ancora nessuna iscrizione', BTN_PDF_ISCR(), 'atleta')}
+    ${passo(2, 'Ordine gare', nProg > 0, nProg ? `${plur(nProg, 'gara', 'gare')} in ${plur(nSessProg, 'mezza giornata', 'mezze giornate')}` : 'Non ancora caricato: dice in quale mezza giornata si nuota ogni gara', fileBtn('pFoto', 'PDF o foto', 'image/*,application/pdf,.pdf', 'Programma o timeline delle gare: ogni gara va nella sua mezza giornata'), 'programma')}
+    ${passo(3, 'Risultati', nT + nEs > 0, nT + nEs ? `${plur(nT, 'tempo', 'tempi')} su ${plur(rM.length, 'gara', 'gare')}${nEs ? ` · ${nEs} SQ, ASS o RIT` : ''}` : 'Ancora nessun tempo', BTN_PDF_RIS(), 'singolo')}
+  </div>` : '';
+
+  // --- pannello di lavoro (uno alla volta) ---
   const gm = UI.garaModifica ? DB.gare.find(g => g.id === UI.garaModifica) : null;
+  const giorniSel = ms ? giorniManif(ms) : [];
   const atlDefault = gm?.atleta || UI.ultimoAtletaGara || UI.atleta || atleti[0] || '';
-  const ms = mp.get(UI.manifSel), giorniSel = ms ? giorniManif(ms) : [];
   const giornoDefault = gm && ms ? dataRis(gm, ms) : giorniSel.includes(UI.ultimoGiornoGara) ? UI.ultimoGiornoGara : giorniSel.includes(oggiStr()) ? oggiStr() : giorniSel[0];
-  const formRis = UI.manifSel && !nuovaAperta ? `<form id="formGara" class="form" novalidate>
+  const formRis = ms ? `<form id="formGara" class="form" novalidate>
       <div class="campi">
         ${giorniSel.length > 1 ? `<label class="campo">Giorno<select id="rGiorno">${giorniSel.map(d => opt(d, giornoDefault, etGiornoManif(ms, d))).join('')}</select></label>` : ''}
         <label class="campo">Mezza giornata<select id="rFascia">${FASCE_GARA.map(f => opt(f, gm ? fasciaGara(gm) : UI.ultimaFasciaGara || 'Mattino')).join('')}</select></label>
         <label class="campo">Atleta<select id="rAtleta">${atleti.map(a => opt(a, atlDefault)).join('')}</select></label>
         <label class="campo">Gara<input type="text" id="rGara" list="dlGare" value="${esc(gm?.gara || UI.ultimaGara || '')}" placeholder="es. 100 SL"></label>
-        <label class="campo">Tempo<input type="text" id="rTempo" inputmode="decimal" value="${gm && conTempo(gm) ? esc(fmtTempo(gm.tempo)) : ''}" placeholder="1:02.35 · vuoto = iscritto"></label>
-        <label class="campo">Posizione<input type="number" id="rPos" inputmode="numeric" min="1" value="${gm?.posizione ?? ''}" placeholder="facoltativa"></label>
+        <label class="campo">Tempo<input type="text" id="rTempo" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${gm ? esc(valoreTempo(gm)) : ''}" placeholder="1'02&quot;35 · SQ · vuoto = iscritto"></label>
+        <label class="campo">Posizione<input type="text" id="rPos" inputmode="numeric" autocomplete="off" value="${gm?.posizione ?? ''}" placeholder="facoltativa"></label>
       </div>
       <datalist id="dlGare">${[...new Set([...GARE_COMUNI, ...DB.gare.map(g => g.gara)])].map(g => `<option value="${esc(g)}">`).join('')}</datalist>
       <label class="campo">Note tecniche<textarea id="rNote" rows="3" placeholder="es. Partenza: reazione lenta. Virate: buone, subacquee corte. Passaggi: 28.9 – 30.5">${esc(gm?.note || '')}</textarea></label>
       <div class="f-riga aspetti" aria-label="Inserisci un aspetto tecnico">${ASPETTI_TECNICI.map(a => `<button type="button" class="chip" data-action="gr-aspetto" data-v="${a}">+ ${a}</button>`).join('')}</div>
       <div class="azioni"><button type="submit" class="btn primario">${gm ? 'Salva modifiche' : 'Aggiungi risultato'}</button>${gm ? '<button type="button" class="btn" data-action="gr-annulla-ris">Annulla</button>' : ''}<span class="esito" id="rEsito" role="status"></span></div>
     </form>` : '';
-  // tre modi: atleta per atleta (iscrizioni e tempi), programma (gare per mezza giornata), un risultato (con le note tecniche)
-  const modo = gm ? 'singolo' : ['atleta', 'programma', 'singolo'].includes(UI.gareModo) ? UI.gareModo : 'atleta';
-  const MODI = [['atleta', 'Atleta per atleta'], ['programma', 'Programma per mezza giornata'], ['singolo', 'Un risultato']];
-  const schede = ms && !nuovaAperta && !gm ? `<div class="seg gare-modo" role="group" aria-label="Cosa inserire">${MODI.map(([k, t]) => `<button type="button" data-action="gr-modo" data-modo="${k}" aria-pressed="${modo === k}">${t}</button>`).join('')}</div>` : '';
-  const pannello = !ms || nuovaAperta ? '' : modo === 'programma' ? formProgramma(ms) : modo === 'atleta' ? formIscrizioni(ms, atleti) : formRis;
-  const ins = `<section class="card" id="secGareIns">${cardHead(gm ? 'Modifica risultato' : 'Iscrizioni e risultati', null, '«Programma per mezza giornata»: in quale mezza giornata si nuota ogni gara. «Atleta per atleta»: spunta le gare di ogni atleta (iscrizioni) e, dopo la gara, scrivi i tempi. «Un risultato»: una gara alla volta, con le note tecniche. Le iscrizioni contano già nella programmazione come allenamento di chi gareggia.')}
-    <div class="azioni" style="margin-bottom:12px">
-      ${tutte.length ? `<label class="campo" style="flex:1 1 320px">Manifestazione<select id="gManif">${tutte.map(m => opt(m.id, UI.manifSel, `${fmtPeriodoBreve(m)} · ${m.nome} · vasca ${m.vasca} m`)).join('')}</select></label>
-      <button type="button" class="btn" data-action="gr-nuova-manif" style="align-self:flex-end">Nuova manifestazione</button>` : ''}
-      <label class="btn file-btn" style="align-self:flex-end" title="Elenco «iscritti società» della FIN (portale Coninet), in PDF">Carica il PDF delle iscrizioni<input type="file" id="gPdf" accept="application/pdf,.pdf"></label></div>
-    ${UI.pdfIscr ? anteprimaPdf(UI.pdfIscr) : formManif + schede + pannello}</section>`;
+  const pannelloGara = (titolo, corpo) => `<div class="pannello-gara" id="pannelloGara"><div class="pg-titolo"><h4 class="etichetta">${esc(titolo)}</h4><button type="button" class="btn piccolo" data-action="gr-chiudi">Chiudi</button></div>${corpo}</div>`;
+  const modo = gm ? 'singolo' : UI.gareModo;
+  let pannello = '';
+  if (UI.pdfIscr) pannello = `<div class="pannello-gara">${anteprimaPdf(UI.pdfIscr)}</div>`;
+  else if (UI.pdfRis) pannello = `<div class="pannello-gara">${anteprimaRis(UI.pdfRis)}</div>`;
+  else if (nuovaAperta) pannello = formManif;
+  else if (ms && modo === 'programma') pannello = pannelloGara('Ordine gare: la mezza giornata di ogni gara', formProgramma(ms));
+  else if (ms && modo === 'atleta') pannello = pannelloGara('Iscrizioni atleta per atleta', formIscrizioni(ms, atleti));
+  else if (ms && modo === 'singolo') pannello = pannelloGara(gm ? `Modifica · ${gm.atleta} · ${gm.gara}` : 'Un risultato, con le note tecniche', formRis);
+  const ins = `<section class="card" id="secGareIns">${scelta}${info}${passi}${pannello}</section>`;
 
-  // --- riepilogo per manifestazione ---
-  const carte = manifVis.map(m => {
-    const giorni = giorniManif(m), multi = giorni.length > 1;
-    const r = tuttiVisibili.filter(g => g.manifId === m.id).sort((a, b) => (dataRis(a, m) < dataRis(b, m) ? -1 : dataRis(a, m) > dataRis(b, m) ? 1 : 0) || FASCE_GARA.indexOf(fasciaGara(a)) - FASCE_GARA.indexOf(fasciaGara(b)) || a.atleta.localeCompare(b.atleta, 'it') || ordineGara(a.gara) - ordineGara(b.gara) || a.gara.localeCompare(b.gara, 'it'));
-    const sessione = g => `${dataRis(g, m)}|${fasciaGara(g)}`, dueFasce = r.some(g => fasciaGara(g) === 'Pomeriggio');
-    const nT = r.filter(conTempo).length, nIscr = r.length - nT;
-    const nPb = r.filter(g => A.get(g.id)?.stato === 'pb').length, podi = r.filter(g => g.posizione && g.posizione <= 3).length;
-    // carico come allenamento: media per atleta in gara, mezze giornate sommate
-    const perAtl = new Map();
-    let nSess = 0;
-    for (const d of giorni) for (const x of lavoriGara(m, d)) { if (x.atleti.length) nSess++; for (const [a, c] of x.per) { const t = perAtl.get(a) || { metri: 0, ua: 0 }; t.metri += c.metri; t.ua += c.durata * x.rpeTarget; perAtl.set(a, t); } }
-    const caricoTxt = perAtl.size ? ` · come allenamento: ${num(media([...perAtl.values()].map(t => t.metri)))} m e ${num(media([...perAtl.values()].map(t => t.ua)))} UA per atleta in gara${nSess > 1 ? ` (${nSess} mezze giornate)` : ''}` : '';
-    let sessPrima = '';
-    const righe = r.map(g => {
-      const d = dataRis(g, m), k = sessione(g);
-      const testaGiorno = (multi || dueFasce) && k !== sessPrima ? `<tr class="riga-giorno"><th colspan="9" scope="rowgroup">${GIORNI_LUNGHI[giornoSett(d)]} ${fmtData(d)}${multi ? ` · ${giorni.indexOf(d) + 1}° giorno` : ''} · ${fasciaGara(g).toLowerCase()} · ${((n) => `${n} ${n === 1 ? 'gara' : 'gare'}`)(r.filter(x => sessione(x) === k).length)}</th></tr>` : '';
-      sessPrima = k;
-      return `${testaGiorno}<tr class="${g.id === UI.garaModifica ? 'sel' : ''}${conTempo(g) ? '' : ' iscr'}"><td class="nome-atl">${esc(g.atleta)}</td><td>${esc(g.gara)}</td>
-      <td class="num">${conTempo(g) ? `<b class="tempo">${fmtTempo(g.tempo)}</b>` : '<span class="muto">iscritto</span>'}</td><td class="num">${g.posizione ? g.posizione + '°' : '—'}</td>
-      <td>${chipPersonale(A.get(g.id))}</td>${VASCHE.map(v => cellaPB(PB.get(`${g.atleta}|${g.gara}`)?.[v.v], g.id, false)).join('')}<td class="note-tec">${g.note ? esc(g.note).replace(/\n/g, '<br>') : '<span class="muto">—</span>'}</td>
-      <td class="riga-az"><button type="button" class="btn-x" data-action="gr-modifica-ris" data-id="${g.id}" aria-label="Modifica risultato">✎</button><button type="button" class="btn-x" data-action="gr-elimina-ris" data-id="${g.id}" aria-label="Elimina risultato">✕</button></td></tr>`;
-    }).join('');
-    return `<section class="card">
-      <div class="al-top"><div><h3 class="manif-nome">${esc(m.nome)}</h3>
-        <p class="nota" style="margin:4px 0 0">${fmtPeriodoManif(m)}${multi ? ` (${giorni.length} giorni)` : ''}${m.luogo ? ' · ' + esc(m.luogo) : ''} · vasca ${m.vasca} m · ${nT} ${nT === 1 ? 'gara' : 'gare'}${nIscr ? ` · ${nIscr} ${nIscr === 1 ? 'iscrizione' : 'iscrizioni'}` : ''}${nPb ? ` · ${nPb} ${nPb === 1 ? 'personale' : 'personali'}` : ''}${podi ? ` · ${podi} ${podi === 1 ? 'podio' : 'podi'}` : ''}</p>
-        ${caricoTxt ? `<p class="nota-piccola" style="margin:2px 0 0">${caricoTxt.slice(3).replace(/^c/, 'C')}${giorni.some(d => d >= oggiStr()) ? ' · i giorni da fare contano come programmati' : ''}</p>` : ''}</div>
-        <div class="azioni"><button type="button" class="btn piccolo" data-action="gr-scegli-manif" data-id="${m.id}">Iscrizioni e tempi</button><button type="button" class="btn piccolo" data-action="gr-modifica-manif" data-id="${m.id}">Modifica</button><button type="button" class="btn-x" data-action="gr-elimina-manif" data-id="${m.id}" aria-label="Elimina manifestazione">✕</button></div></div>
-      ${ripartizioneHTML(m, r)}
-      ${r.length ? `<div class="tbl-wrap" style="margin-top:10px"><table class="tab-gare"><thead><tr><th rowspan="2">Atleta</th><th rowspan="2">Gara</th><th rowspan="2" class="num">Tempo</th><th rowspan="2" class="num">Pos.</th><th rowspan="2">Rispetto al precedente</th><th colspan="2" class="gruppo-th">Personal best</th><th rowspan="2">Note tecniche</th><th rowspan="2"></th></tr><tr>${VASCHE.map(v => `<th class="num">${v.nome}<br><small>${v.breve}</small></th>`).join('')}</tr></thead><tbody>${righe}</tbody></table></div>` : '<p class="vuoto">Nessun risultato inserito.</p>'}
-    </section>`;
+  // --- gare e tempi della manifestazione, da correggere sul posto ---
+  const righe = rM.filter(filtro).sort((a, b) => (dataRis(a, ms) < dataRis(b, ms) ? -1 : dataRis(a, ms) > dataRis(b, ms) ? 1 : 0) || FASCE_GARA.indexOf(fasciaGara(a)) - FASCE_GARA.indexOf(fasciaGara(b)) || a.atleta.localeCompare(b.atleta, 'it') || ordineGara(a.gara) - ordineGara(b.gara) || a.gara.localeCompare(b.gara, 'it'));
+  const tab = ms && !nuovaAperta ? `<section class="card" id="secGareTab">${cardHead(`Gare e tempi${UI.atleta ? ` · ${UI.atleta}` : ''}`, null, 'Tocca un tempo per scriverlo o correggerlo, anche con la tastiera normale: 1\'02"35, 1:02.35, 1.02.35 o 28,45. SQ, ASS o RIT per squalificato, assente o ritirato; vuoto = solo iscritto. Si salva da solo; ✎ per le note tecniche.')}
+      ${righe.length ? tabellaTempi(ms, righe, A) : `<p class="vuoto">${UI.atleta ? 'Nessuna gara di questo atleta nella manifestazione.' : 'Nessuna gara: carica le iscrizioni o i risultati.'}</p>`}
+      ${ripartizioneHTML(ms, righe)}</section>` : '';
+
+  // --- le altre manifestazioni del periodo ---
+  const altre = manifVis.filter(m => m.id !== UI.manifSel);
+  const cartaAltre = altre.length ? `<section class="card">${cardHead('Altre manifestazioni del periodo', null, 'Tocca una manifestazione per aprirla.')}
+    <ul class="elenco-manif">${altre.map(m => {
+      const x = DB.gare.filter(g => g.manifId === m.id && filtro(g)), t = x.filter(conTempo).length, pb = x.filter(g => A.get(g.id)?.stato === 'pb').length;
+      return `<li><button type="button" class="riga-manif" data-action="gr-scegli-manif" data-id="${m.id}"><span class="rm-data">${fmtPeriodoBreve(m)}</span><span class="rm-nome">${esc(m.nome)}<small>${m.luogo ? esc(m.luogo) + ' · ' : ''}${m.vasca} m · ${plur(x.length, 'gara', 'gare')}${t ? ` · ${plur(t, 'tempo', 'tempi')}` : ''}${pb ? ` · ${plur(pb, 'personale', 'personali')}` : ''}</small></span><span class="rm-va" aria-hidden="true">›</span></button></li>`;
+    }).join('')}</ul></section>` : '';
+  const fuoriPeriodo = ms && !manifVisibile(ms) ? '<p class="nota-piccola">Questa manifestazione è fuori dal periodo selezionato in alto: i numeri qui sopra non la contano.</p>' : '';
+  return { html: ins + tab + fuoriPeriodo + kpis + cartaAltre, dopo: () => {} };
+}
+
+// tabella delle gare di una manifestazione, per mezza giornata, con tempo e posizione modificabili
+function tabellaTempi(m, r, A) {
+  const giorni = giorniManif(m), multi = giorni.length > 1;
+  const sessione = g => `${dataRis(g, m)}|${fasciaGara(g)}`, dueFasce = r.some(g => fasciaGara(g) === 'Pomeriggio');
+  let prima = '';
+  const corpo = r.map(g => {
+    const d = dataRis(g, m), k = sessione(g), et = `${g.atleta} ${g.gara}`;
+    const testa = (multi || dueFasce) && k !== prima ? `<tr class="riga-giorno"><th colspan="6" scope="rowgroup">${GIORNI_LUNGHI[giornoSett(d)]} ${fmtData(d)}${multi ? ` · ${giorni.indexOf(d) + 1}° giorno` : ''} · ${fasciaGara(g).toLowerCase()} · ${plur(r.filter(x => sessione(x) === k).length, 'gara', 'gare')}</th></tr>` : '';
+    prima = k;
+    return `${testa}<tr data-gid="${g.id}" class="${g.id === UI.garaModifica ? 'sel' : ''}${iscrizione(g) ? ' iscr' : ''}">
+      <td class="nome-atl">${esc(g.atleta)}</td><td class="t-gara">${esc(g.gara)}${g.note ? `<br><small class="note-breve">${esc(g.note.length > 90 ? g.note.slice(0, 88) + '…' : g.note)}</small>` : ''}</td>
+      <td class="num t-tc"><input type="text" class="t-tempo" data-id="${g.id}" value="${esc(valoreTempo(g))}" placeholder="tempo" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" aria-label="Tempo: ${esc(et)}"></td>
+      <td class="num t-pc"><input type="text" class="t-pos" data-id="${g.id}" value="${g.posizione ?? ''}" placeholder="pos." inputmode="numeric" autocomplete="off" enterkeyhint="next" aria-label="Posizione: ${esc(et)}"></td>
+      <td class="t-conf">${confronto(g, A.get(g.id))}</td>
+      <td class="riga-az"><button type="button" class="btn-x" data-action="gr-modifica-ris" data-id="${g.id}" aria-label="Note tecniche e modifica: ${esc(et)}">✎</button><button type="button" class="btn-x" data-action="gr-elimina-ris" data-id="${g.id}" aria-label="Elimina: ${esc(et)}">✕</button></td></tr>`;
   }).join('');
+  return `<div class="tbl-wrap"><table class="tab-gare tab-tempi"><thead><tr><th>Atleta</th><th>Gara</th><th class="num">Tempo</th><th class="num">Pos.</th><th>Rispetto al personale</th><th><span class="vh">Azioni</span></th></tr></thead><tbody>${corpo}</tbody></table></div>`;
+}
+// un tempo o una posizione corretti nella tabella: si salvano subito, senza ridisegnare la pagina
+function salvaCella(el) {
+  const g = DB.gare.find(x => x.id === el.dataset.id); if (!g) return;
+  const v = el.value.trim(), riga = el.closest('tr');
+  const errore = t => { el.classList.add('errato'); el.setAttribute('aria-invalid', 'true'); avviso(t); };
+  if (el.classList.contains('t-tempo')) {
+    const es = esitoDa(v), t = es || !v ? null : parseTempoGara(v);
+    if (v && !es && !(t > 0)) return errore(`Tempo non chiaro: «${v}». Scrivilo come 1'02"35, 1:02.35 o 28.45 (oppure SQ, ASS, RIT).`);
+    const prima = valoreTempo(g);
+    g.tempo = t > 0 ? t : null; if (es) g.esito = es; else delete g.esito;
+    el.value = valoreTempo(g);
+    if (el.value === prima) { el.classList.remove('errato'); el.removeAttribute('aria-invalid'); return; }
+  } else {
+    const p = v ? parseInt(v.replace(/[°º.]/g, ''), 10) : null;
+    if (v && !(p >= 1)) return errore('Posizione: scrivi un numero (1, 2, 3…).');
+    if ((g.posizione || null) === (p || null)) { el.value = p || ''; return; }
+    g.posizione = p || null; el.value = p || '';
+  }
+  el.classList.remove('errato'); el.removeAttribute('aria-invalid');
+  salvaGare();
+  const c = riga?.querySelector('.t-conf'); if (c) c.innerHTML = confronto(g, analisiGare().get(g.id));
+  riga?.classList.toggle('iscr', iscrizione(g));
+  el.classList.add('salvato'); setTimeout(() => el.classList.remove('salvato'), 1400);
+}
+// Invio nei campi dei tempi: si passa al tempo successivo (come in un foglio di calcolo)
+function tastoGare(e) {
+  if (e.key !== 'Enter' || !e.target.matches?.('.t-tempo, .t-pos, .pr-tempo, .pr-pos')) return false;
+  e.preventDefault();
+  const cls = ['t-tempo', 't-pos', 'pr-tempo', 'pr-pos'].find(c => e.target.classList.contains(c));
+  const tutti = $$(`#vista .${cls}`), i = tutti.indexOf(e.target);
+  if (tutti[i + 1]) { tutti[i + 1].focus(); tutti[i + 1].select?.(); } else e.target.blur();
+  return true;
+}
 
-  // --- personali e progressione ---
-  const tuttiVis = DB.gare.filter(g => { const m = mp.get(g.manifId); return m && conTempo(g) && manifVisibile(m) && atleti.includes(g.atleta); });
-  const pers = [...PB.entries()].map(([k, r]) => ({ atleta: k.split('|')[0], gara: k.split('|')[1], r }))
-    .filter(x => atleti.includes(x.atleta) && (!UI.atleta || x.atleta === UI.atleta))
-    .sort((a, b) => a.atleta.localeCompare(b.atleta, 'it') || ordineGara(a.gara) - ordineGara(b.gara) || a.gara.localeCompare(b.gara, 'it'));
-  const cartaPers = pers.length ? `<section class="card">${cardHead(UI.atleta ? `Personal best di ${UI.atleta}` : 'Personal best', null, 'Miglior tempo di sempre per ogni gara, in vasca lunga (50 m) e in vasca corta (25 m), su tutte le manifestazioni registrate.')}
-    <div class="tbl-wrap"><table class="tab-pb"><thead><tr><th>Atleta</th><th>Gara</th>${VASCHE.map(v => `<th class="num">${v.nome}<br><small>${v.breve}</small></th>`).join('')}</tr></thead>
-    <tbody>${pers.map(x => `<tr><td class="nome-atl">${esc(x.atleta)}</td><td>${esc(x.gara)}</td>${VASCHE.map(v => cellaPB(x.r[v.v], null, true)).join('')}</tr>`).join('')}</tbody></table></div></section>` : '';
+/* ---- atleta: trend di ogni gara nella stagione ---- */
+// mini grafico dei tempi in ordine di data (in basso = più veloce, il punto pieno è il migliore)
+function sparkline(valori, colore, etichette = []) {
+  const w = 220, h = 44, p = 6, n = valori.length;
+  const min = Math.min(...valori), max = Math.max(...valori), sp = max - min || 1;
+  const X = i => (n === 1 ? w / 2 : p + (i * (w - 2 * p)) / (n - 1)), Y = v => (max === min ? h / 2 : h - p - ((v - min) / sp) * (h - 2 * p));
+  const iMin = valori.indexOf(min);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(`Tempi in ordine di data: ${valori.map(v => fmtTempo(v)).join(', ')}`)}">
+    ${n > 1 ? `<polyline points="${valori.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" style="stroke:var(${colore})" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
+    ${valori.map((v, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="${i === iMin ? 4 : 2.6}" style="fill:${i === iMin ? `var(${colore})` : 'var(--surface)'};stroke:var(${colore})" stroke-width="1.6"><title>${esc(`${etichette[i] || ''} ${fmtTempo(v)}`.trim())}</title></circle>`).join('')}
+  </svg>`;
+}
+function vistaTrendAtleta() {
+  const atleti = elencoAtleti(), mp = manifPerId(), PB = personalBest(), A = analisiGare();
+  if (!atleti.length) return { html: '<section class="card"><p class="vuoto">La rosa è vuota: aggiungi gli atleti da Dati.</p></section>', dopo: () => {} };
+  const tutti = DB.gare.filter(g => conTempo(g) && mp.has(g.manifId) && atleti.includes(g.atleta)).map(g => { const m = mp.get(g.manifId); return { g, m, d: dataRis(g, m) }; });
+  const oggiK = stagioneDi(oggiStr()).k;
+  const stagioni = [...new Set([oggiK, ...tutti.map(x => stagioneDi(x.d).k)])].sort().reverse();
+  // stagione: quella scelta; altrimenti la corrente, o l'ultima con dei tempi se la corrente non ne ha ancora
+  const conTempi = k => tutti.some(x => stagioneDi(x.d).k === k);
+  const S = stagioneDaChiave(stagioni.includes(UI.gareStagione) ? UI.gareStagione : conTempi(oggiK) ? oggiK : stagioni.find(conTempi) || oggiK);
+  const inS = tutti.filter(x => x.d >= S.da && x.d <= S.a);
+  const conta = a => inS.filter(x => x.g.atleta === a).length;
+  const a = [UI.atleta, UI.garaAtleta].find(x => x && atleti.includes(x)) || atleti.find(conta) || atleti[0];
+  UI.garaAtleta = a;
+  const sue = inS.filter(x => x.g.atleta === a).sort((p, q) => (p.d < q.d ? -1 : p.d > q.d ? 1 : 0));
+  // una scheda per gara e vasca
+  const gruppi = new Map();
+  for (const x of sue) { const k = `${x.g.gara}|${x.m.vasca}`; if (!gruppi.has(k)) gruppi.set(k, []); gruppi.get(k).push(x); }
+  const eventi = [...gruppi].map(([k, l]) => {
+    const [gara, v] = k.split('|'), vasca = Number(v);
+    const migliore = l.reduce((b, x) => (x.g.tempo < b.g.tempo ? x : b), l[0]);
+    // personale prima della stagione (stessa gara e vasca)
+    const prima = tutti.filter(x => x.g.atleta === a && x.g.gara === gara && x.m.vasca === vasca && x.d < S.da).reduce((b, x) => (b == null || x.g.tempo < b ? x.g.tempo : b), null);
+    return { k, gara, vasca, l, tempi: l.map(x => x.g.tempo), primo: l[0], ultimo: l[l.length - 1], migliore, prima, delta: l.length > 1 ? l[l.length - 1].g.tempo - l[0].g.tempo : null };
+  }).sort((p, q) => ordineGara(p.gara) - ordineGara(q.gara) || p.gara.localeCompare(q.gara, 'it') || q.vasca - p.vasca);
+  const sel = eventi.find(e => e.k === UI.trendSel) || eventi[0];
+  const nPb = sue.filter(x => A.get(x.g.id)?.stato === 'pb').length;
+  const progr = eventi.filter(e => e.l.length > 1).map(e => ((e.primo.g.tempo - e.ultimo.g.tempo) / e.primo.g.tempo) * 100);
+  const nManif = new Set(sue.map(x => x.m.id)).size;
 
-  const conGare = [...new Set(tuttiVis.map(g => g.atleta))].sort((a, b) => a.localeCompare(b, 'it'));
-  const aProg = conGare.includes(UI.atleta) ? UI.atleta : conGare.includes(UI.garaAtleta) ? UI.garaAtleta : conGare[0];
-  const sueGare = aProg ? tuttiVis.filter(g => g.atleta === aProg) : [];
-  const conta = {}; for (const g of sueGare) conta[g.gara] = (conta[g.gara] || 0) + 1;
-  const eventi = Object.keys(conta).sort((a, b) => conta[b] - conta[a] || a.localeCompare(b, 'it'));
-  const gProg = eventi.includes(UI.garaSel) ? UI.garaSel : eventi[0];
-  const cartaProg = aProg ? `<section class="card">${cardHead('Progressione', null, 'Tempi della stessa gara nelle diverse manifestazioni, separati per vasca.')}
-    <div class="azioni" style="margin-bottom:10px">
-      <label class="f-riga"><span class="etichetta">Atleta</span><select id="grAtletaProg">${conGare.map(a => opt(a, aProg)).join('')}</select></label>
-      <label class="f-riga"><span class="etichetta">Gara</span><select id="grGaraProg">${eventi.map(e => opt(e, gProg, `${e} (${conta[e]})`)).join('')}</select></label></div>
-    <div class="grafico" id="gGareProg"></div></section>` : '';
+  const ctrl = `<section class="card"><div class="azioni trend-ctrl">
+      <label class="campo">Atleta<select id="grTrendAtleta">${atleti.map(x => opt(x, a, `${x}${conta(x) ? ` · ${conta(x)}` : ''}`)).join('')}</select></label>
+      <label class="campo">Stagione<select id="grStagione">${stagioni.map(k => opt(k, S.k)).join('')}</select></label></div>
+    <p class="nota-piccola" style="margin:6px 0 0">Dal 1° settembre al 31 agosto. Ogni gara ha la sua scheda per vasca (25 e 50 m): i tempi in ordine di data, l'ultimo, il migliore e quanto è cambiato dal primo tempo della stagione.</p></section>`;
+  const kpis = `<div class="kpi-strip kpi-gare">
+    ${kpi('Gare nuotate', null, num(sue.length), '', `${plur(nManif, 'manifestazione', 'manifestazioni')} · stagione ${S.k}`)}
+    ${kpi('Gare diverse', null, num(eventi.length), '', 'gara e vasca')}
+    ${kpi('Personali migliorati', null, num(nPb), '', 'rispetto al miglior tempo precedente')}
+    ${kpi('Progresso mediano', null, progr.length ? perc(mediana(progr), 1) : '—', '', 'dal primo all\'ultimo tempo, gare nuotate più volte')}
+  </div>`;
+  if (!eventi.length) return { html: ctrl + `<section class="card"><p class="vuoto">${esc(a)}: nessun tempo nella stagione ${S.k}. I tempi arrivano dai risultati delle manifestazioni.</p></section>` + cartaPersonali(a, PB), dopo: () => {} };
 
-  const vuoto = !DB.manifestazioni.length ? '' : !manifVis.length ? `<section class="card"><p class="vuoto">Nessuna manifestazione nel periodo selezionato${UI.atleta ? ' per questo atleta' : ''}.</p></section>` : '';
-  const html = head + kpis + ins + carte + vuoto + (cartaProg || '') + cartaPers;
-
+  const carta = e => {
+    const col = e.vasca === 50 ? '--s-blue' : '--s-orange';
+    const nuovoPb = e.prima != null && e.migliore.g.tempo < e.prima;
+    return `<button type="button" class="trend-carta${e === sel ? ' sel' : ''}" data-action="gr-trend" data-k="${esc(e.k)}" aria-pressed="${e === sel}">
+      <span class="tc-testa"><b>${esc(e.gara)}</b><small>vasca ${e.vasca} m · ${plur(e.l.length, 'gara', 'gare')}</small></span>
+      ${sparkline(e.tempi, col, e.l.map(x => fmtData(x.d)))}
+      <span class="tc-num">
+        <span><small>Ultimo</small><b>${fmtTempo(e.ultimo.g.tempo)}</b></span>
+        <span><small>Migliore</small><b>${fmtTempo(e.migliore.g.tempo)}</b></span>
+        <span class="${e.delta == null ? '' : e.delta < 0 ? 'meglio' : e.delta > 0 ? 'peggio' : ''}"><small>Dal primo</small><b>${e.delta == null ? '—' : `${segno(e.delta, 2)} s`}</b></span>
+      </span>
+      <span class="tc-pb">${e.prima == null ? 'Prima stagione con questa gara in questa vasca' : nuovoPb ? `<b class="meglio">Personale migliorato di ${num(e.prima - e.migliore.g.tempo, 2)} s</b> (era ${fmtTempo(e.prima)})` : `Personale ${fmtTempo(e.prima)}: mancano ${num(e.migliore.g.tempo - e.prima, 2)} s`}</span>
+    </button>`;
+  };
+  const cartaSel = `<section class="card" id="secTrend">${cardHead(`${a} · ${sel.gara} · vasca ${sel.vasca} m`, null, `Stagione ${S.k}: ${plur(sel.l.length, 'tempo', 'tempi')}${sel.prima != null ? ', la linea tratteggiata è il personale di inizio stagione' : ''}. Più in basso = più veloce.`)}
+      <div class="grafico" id="gTrend"></div>
+      <div class="tbl-wrap" style="margin-top:8px"><table class="tab-trend"><thead><tr><th>Data</th><th>Manifestazione</th><th class="num">Tempo</th><th class="num">Pos.</th><th>Rispetto al precedente</th></tr></thead>
+      <tbody>${sel.l.map(x => `<tr><td>${fmtDataAnno(x.d)}</td><td>${esc(x.m.nome)}</td><td class="num"><b class="tempo">${fmtTempo(x.g.tempo)}</b></td><td class="num">${x.g.posizione ? x.g.posizione + '°' : '—'}</td><td>${chipPersonale(A.get(x.g.id))}</td></tr>`).join('')}</tbody></table></div></section>`;
+  const griglia = `<section class="card">${cardHead('Trend per gara', null, 'Tocca una gara per vederne il grafico e i tempi.')}<div class="trend-griglia">${eventi.map(carta).join('')}</div></section>`;
+  const html = ctrl + kpis + cartaSel + griglia + cartaPersonali(a, PB);
   const dopo = () => {
-    if (!aProg) return;
-    const serie = sueGare.filter(g => g.gara === gProg).map(g => { const m = mp.get(g.manifId); return { g, m, d: dataRis(g, m) }; }).sort((a, b) => (a.d < b.d ? -1 : 1));
-    const date = [...new Set(serie.map(x => x.d))];
-    const val = v => date.map(d => { const t = serie.filter(x => x.d === d && x.m.vasca === v).map(x => x.g.tempo); return t.length ? Math.min(...t) : null; });
-    const v50 = val(50), v25 = val(25);
-    const strati = [], leg = [];
-    if (v50.some(x => x != null)) { strati.push({ tipo: 'linea', valori: v50, colore: '--s-blue', punti: true, spessore: 2.5 }); leg.push({ label: 'Vasca 50 m', colore: '--s-blue', forma: 'linea' }); }
-    if (v25.some(x => x != null)) { strati.push({ tipo: 'linea', valori: v25, colore: '--s-orange', punti: true, spessore: 2.5 }); leg.push({ label: 'Vasca 25 m', colore: '--s-orange', forma: 'linea' }); }
-    grafico($('#gGareProg'), {
-      titolo: `${aProg} ${gProg}`, altezza: 240, categorie: date, etichettaX: i => fmtData(date[i]), zero: false, fmtY: v => fmtTempo(v, 1),
+    const date = [...new Set(sel.l.map(x => x.d))];
+    const valori = date.map(d => Math.min(...sel.l.filter(x => x.d === d).map(x => x.g.tempo)));
+    const col = sel.vasca === 50 ? '--s-blue' : '--s-orange';
+    const strati = [{ tipo: 'linea', valori, colore: col, punti: true, spessore: 2.5 }], leg = [{ label: `Vasca ${sel.vasca} m`, colore: col, forma: 'linea' }];
+    if (sel.prima != null) { strati.unshift({ tipo: 'linea', valori: date.map(() => sel.prima), colore: '--muted', tratteggio: true, spessore: 1.5 }); leg.push({ label: `Personale a inizio stagione ${fmtTempo(sel.prima)}`, colore: '--muted', forma: 'linea' }); }
+    grafico($('#gTrend'), {
+      titolo: `${a} ${sel.gara} vasca ${sel.vasca} m`, altezza: 220, categorie: date, etichettaX: i => fmtData(date[i]), zero: false, fmtY: v => fmtTempo(v, 1),
       legenda: leg, strati,
-      tooltip: i => `<div class="tt-t">${fmtDataAnno(date[i])}</div>` + serie.filter(x => x.d === date[i]).map(x => rigaTT(`${x.m.nome} · ${x.m.vasca} m`, fmtTempo(x.g.tempo), x.m.vasca === 50 ? '--s-blue' : '--s-orange', 'linea')).join(''),
+      tooltip: i => `<div class="tt-t">${fmtDataAnno(date[i])}</div>` + sel.l.filter(x => x.d === date[i]).map(x => rigaTT(x.m.nome, fmtTempo(x.g.tempo), col, 'linea')).join(''),
     });
   };
   return { html, dopo };
+}
+// personal best di sempre di un atleta, in vasca lunga e corta
+function cartaPersonali(a, PB) {
+  const pers = [...PB.entries()].filter(([k]) => k.split('|')[0] === a).map(([k, r]) => ({ gara: k.split('|')[1], r }))
+    .sort((p, q) => ordineGara(p.gara) - ordineGara(q.gara) || p.gara.localeCompare(q.gara, 'it'));
+  if (!pers.length) return '';
+  return `<section class="card">${cardHead(`Personal best di ${a}`, null, 'Miglior tempo di sempre per ogni gara, in vasca lunga (50 m) e in vasca corta (25 m), su tutte le manifestazioni registrate.')}
+    <div class="tbl-wrap"><table class="tab-pb"><thead><tr><th>Gara</th>${VASCHE.map(v => `<th class="num">${v.nome}<br><small>${v.breve}</small></th>`).join('')}</tr></thead>
+    <tbody>${pers.map(x => `<tr><td>${esc(x.gara)}</td>${VASCHE.map(v => cellaPB(x.r[v.v], null, true)).join('')}</tr>`).join('')}</tbody></table></div></section>`;
 }
 
 /* ---- azioni ---- */
@@ -4602,25 +4870,26 @@ function salvaManif() {
 }
 function salvaRisultato() {
   const e = $('#rEsito'), atleta = $('#rAtleta').value, gara = normGara($('#rGara').value);
-  const testoT = $('#rTempo').value.trim(), tempo = testoT ? parseTempo(testoT) : null, pos = parseNum($('#rPos').value), note = $('#rNote').value.trim();
+  const testoT = $('#rTempo').value.trim(), esito = esitoDa(testoT), tempo = testoT && !esito ? parseTempoGara(testoT) : null, pos = parseInt($('#rPos').value, 10) || null, note = $('#rNote').value.trim();
   const m = DB.manifestazioni.find(x => x.id === UI.manifSel);
   const giorni = m ? giorniManif(m) : [], scelto = $('#rGiorno')?.value, data = giorni.includes(scelto) ? scelto : m?.data;
   const err = [];
   if (!m) err.push('scegli la manifestazione');
   if (!atleta) err.push('scegli l\'atleta');
   if (!gara) err.push('scrivi la gara');
-  if (testoT && !(tempo > 0)) err.push('scrivi il tempo come 1:02.35 (o lascialo vuoto per un\'iscrizione)');
+  if (testoT && !esito && !(tempo > 0)) err.push('scrivi il tempo come 1\'02"35 o 1:02.35, oppure SQ, ASS, RIT (vuoto per un\'iscrizione)');
   if (err.length) { e.textContent = 'Per salvare: ' + err.join(', ') + '.'; e.className = 'esito errore'; return; }
   const esistente = UI.garaModifica ? DB.gare.find(g => g.id === UI.garaModifica) : null;
   const sp = m ? sessioneProgramma(m, gara) : null;   // gara in programma: giorno e mezza giornata dal programma
   const fascia = sp ? sp.f : fasciaDa($('#rFascia')?.value);
-  const campi = { data: sp ? sp.d : data, fascia, atleta, gara, tempo: tempo > 0 ? tempo : null, posizione: pos || null, note };
-  if (esistente) Object.assign(esistente, campi);
-  else DB.gare.push({ id: uid(), manifId: UI.manifSel, ...campi });
-  UI.garaModifica = null; UI.ultimoAtletaGara = atleta; UI.ultimaGara = gara; UI.ultimoGiornoGara = campi.data; UI.ultimaFasciaGara = fascia;
+  const campi = { data: sp ? sp.d : data, fascia, atleta, gara, tempo: tempo > 0 ? tempo : null, posizione: esito ? null : pos || null, note };
+  const g = esistente || { id: uid(), manifId: UI.manifSel };
+  Object.assign(g, campi); if (esito) g.esito = esito; else delete g.esito;
+  if (!esistente) DB.gare.push(g);
+  UI.garaModifica = null; UI.gareModo = esistente ? '' : 'singolo'; UI.ultimoAtletaGara = atleta; UI.ultimaGara = gara; UI.ultimoGiornoGara = campi.data; UI.ultimaFasciaGara = fascia;
   salvaGare(); render();
   const a = analisiGare().get((esistente || DB.gare[DB.gare.length - 1]).id);
-  avviso(`${atleta} · ${gara}${giorni.length > 1 ? ` · ${fmtGiorno(campi.data)}` : ''}${sp ? ` · ${fascia.toLowerCase()} (programma)` : ''} · ${tempo > 0 ? fmtTempo(tempo) : 'iscritto'}${a?.stato === 'pb' ? ' · nuovo personale!' : ''}`);
+  avviso(`${atleta} · ${gara}${giorni.length > 1 ? ` · ${fmtGiorno(campi.data)}` : ''}${sp ? ` · ${fascia.toLowerCase()} (programma)` : ''} · ${tempo > 0 ? fmtTempo(tempo) : esito ? ESITI_GARA[esito] : 'iscritto'}${a?.stato === 'pb' ? ' · nuovo personale!' : ''}`);
   $('#rTempo')?.focus();
 }
 /* ---- programma: in quale mezza giornata si nuota ogni gara ---- */
@@ -4647,15 +4916,14 @@ function formProgramma(m) {
     ${sess.map(s => `<td class="num"><input type="radio" name="pg-${i}" data-gara="${esc(g)}" value="${s.k}" ${prog[g] === s.k ? 'checked' : ''} aria-label="${esc(g)}: ${esc(etSessione(m, s))}"></td>`).join('')}</tr>`).join('');
   const n = Object.keys(prog).length;
   const letto = L ? `<div class="prog-letto">
-      <p style="margin:0"><b>Letto da «${esc(L.file)}»:</b> ${L.n ? `${L.n} ${L.n === 1 ? 'gara' : 'gare'}${L.perSess.length ? ` (${L.perSess.map(x => `${esc(x.et)} ${x.n}`).join(', ')})` : ''}` : 'nessuna gara riconosciuta'}. ${L.n ? 'Controlla le spunte qui sotto e tocca «Salva il programma».' : 'Prova con una foto più nitida e dritta, o scegli le mezze giornate a mano.'}${L.n && !L.sessioniTrovate ? ' Nel testo non trovo mattino o pomeriggio: le gare lette sono tutte nella prima mezza giornata, sposta quelle del pomeriggio.' : ''}</p>
+      <p style="margin:0"><b>Letto da «${esc(L.file)}»:</b> ${L.n ? `${L.n} ${L.n === 1 ? 'gara' : 'gare'}${L.perSess.length ? ` (${L.perSess.map(x => `${esc(x.et)} ${x.n}`).join(', ')})` : ''}` : 'nessuna gara riconosciuta'}. ${L.n ? 'Controlla le spunte qui sotto e tocca «Salva l\'ordine gare».' : 'Prova con una foto più nitida e dritta, o scegli le mezze giornate a mano.'}${L.n && !L.sessioniTrovate ? ' Nel testo non trovo mattino o pomeriggio: le gare lette sono tutte nella prima mezza giornata, sposta quelle del pomeriggio.' : ''}</p>
       <details><summary>Immagine e testo letti</summary>${L.img ? `<img class="prog-img" src="${L.img}" alt="Programma gare letto">` : ''}<pre class="prog-testo">${esc(L.testo.trim() || '(nessun testo)')}</pre></details></div>` : '';
   return `<form id="formProg" class="form" novalidate>
-    <div class="azioni prog-leggi"><label class="btn file-btn" title="Foto, screenshot o PDF del programma gare: le gare vanno da sole nella loro mezza giornata">📷 Leggi il programma da foto o PDF<input type="file" id="pFoto" accept="image/*,application/pdf,.pdf"></label></div>
     ${letto}
     <p class="nota-piccola" style="margin-top:0">Per ogni gara scegli la mezza giornata in cui si nuota (${n ? `${n} ${n === 1 ? 'gara' : 'gare'} in programma` : 'programma ancora vuoto'}). Le iscrizioni prendono giorno e mezza giornata da qui; se sposti una gara, si spostano anche le iscrizioni già fatte.</p>
     <div class="tbl-wrap"><table class="tab-prog"><thead><tr><th scope="col">Gara</th><th class="num" scope="col"><small><span class="lungo">non in<br>programma</span><span class="corto" aria-hidden="true">no</span></small></th>${intest}</tr></thead><tbody>${righe}</tbody></table></div>
     <div class="azioni"><input type="text" id="pNuova" placeholder="Altra gara, es. 4x50 MI" aria-label="Altra gara" style="flex:1 1 180px"><button type="button" class="btn piccolo" data-action="gr-prog-aggiungi">Aggiungi la gara</button></div>
-    <div class="azioni"><button type="submit" class="btn primario">Salva il programma</button><span class="esito" id="pEsito" role="status"></span></div>
+    <div class="azioni"><button type="submit" class="btn primario">Salva l'ordine gare</button><span class="esito" id="pEsito" role="status"></span></div>
   </form>`;
 }
 const leggiProgramma = () => Object.fromEntries($$('#formProg input[type=radio]:checked').filter(x => x.value).map(x => [x.dataset.gara, x.value]));
@@ -4671,9 +4939,9 @@ function salvaProgramma() {
     if (s && (dataRis(g, m) !== s.d || fasciaGara(g) !== s.f)) { g.data = s.d; g.fascia = s.f; spostate++; }
   }
   UI.progBozza = null; UI.progLettura = null; if (UI.progExtra) delete UI.progExtra[m.id];
-  UI.gareModo = 'atleta';
+  UI.gareModo = '';
   salvaGare(); render();
-  avviso(`Programma salvato: ${Object.keys(prog).length} gare${spostate ? `, ${spostate} ${spostate === 1 ? 'iscrizione spostata' : 'iscrizioni spostate'}` : ''}. Ora le iscrizioni atleta per atleta`);
+  avviso(`Ordine gare salvato: ${Object.keys(prog).length} gare${spostate ? `, ${spostate} ${spostate === 1 ? 'iscrizione spostata' : 'iscrizioni spostate'}` : ''}`);
 }
 
 /* ---- programma gare da foto o PDF ---- */
@@ -4797,8 +5065,8 @@ function formIscrizioni(m, atleti) {
   const trova = gara => sue.find(g => g.gara === gara);
   const riga = (gara, nota = '') => { const g = trova(gara); return `<div class="isc-riga">
       <label class="isc-nome"><input type="checkbox" class="isc-ck" data-gara="${esc(gara)}" ${g ? 'checked' : ''}> <span>${esc(gara)}${nota ? ` <small class="muto">${esc(nota)}</small>` : ''}</span></label>
-      <input type="text" class="isc-tempo" inputmode="decimal" placeholder="tempo" value="${g && conTempo(g) ? esc(fmtTempo(g.tempo)) : ''}" aria-label="Tempo ${esc(gara)}">
-      <input type="number" class="isc-pos" inputmode="numeric" min="1" placeholder="pos." value="${g?.posizione ?? ''}" aria-label="Posizione ${esc(gara)}"></div>`; };
+      <input type="text" class="isc-tempo" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="tempo" value="${g ? esc(valoreTempo(g)) : ''}" aria-label="Tempo ${esc(gara)}">
+      <input type="text" class="isc-pos" inputmode="numeric" autocomplete="off" placeholder="pos." value="${g?.posizione ?? ''}" aria-label="Posizione ${esc(gara)}"></div>`; };
   let gruppi;
   if (conProg) {
     gruppi = sess.map(s => ({ titolo: etSessione(m, s), righe: ordinaGare(Object.keys(prog).filter(g => prog[g] === s.k)).map(g => riga(g)) })).filter(x => x.righe.length);
@@ -4815,10 +5083,10 @@ function formIscrizioni(m, atleti) {
       <button type="button" class="btn" data-action="gr-iscr-va" data-delta="1" ${i >= atleti.length - 1 ? 'disabled' : ''} aria-label="Atleta successivo">›</button>
       <span class="nota-piccola">${i + 1} di ${atleti.length} · ${nIscritti} ${nIscritti === 1 ? 'atleta iscritto' : 'atleti iscritti'}, ${tutte.length} gare</span>
     </div>
-    ${conProg ? '' : `<p class="nota-piccola">Programma non ancora impostato: le nuove iscrizioni vanno nella mezza giornata scelta qui sotto. Con «Programma per mezza giornata» ogni gara va da sola nella sua.</p>
+    ${conProg ? '' : `<p class="nota-piccola">Programma non ancora impostato: le nuove iscrizioni vanno nella mezza giornata scelta qui sotto. Con l'ordine gare (passo 2) ogni gara va da sola nella sua.</p>
       <label class="campo" style="max-width:340px">Mezza giornata delle nuove iscrizioni<select id="iSess">${sess.map(s => opt(s.k, sessDef, etSessione(m, s))).join('')}</select></label>`}
     ${gruppi.map(x => `<fieldset class="isc-gruppo"><legend>${esc(x.titolo)}</legend><div class="isc-griglia">${x.righe.join('')}</div></fieldset>`).join('')}
-    <p class="nota-piccola">Spunta le gare a cui è iscritto; dopo la gara scrivi tempo e posizione. Le note tecniche si aggiungono con ✎ nel riepilogo.</p>
+    <p class="nota-piccola">Spunta le gare a cui è iscritto; dopo la gara scrivi tempo (1'02"35, 1:02.35, SQ, ASS, RIT) e posizione. Le note tecniche si aggiungono con ✎ nella tabella «Gare e tempi».</p>
     <div class="azioni"><button type="submit" class="btn primario">${i < atleti.length - 1 ? 'Salva e passa al prossimo' : 'Salva'}</button>${i < atleti.length - 1 ? '<button type="button" class="btn" data-action="gr-iscr-salva">Salva</button>' : ''}<span class="esito" id="iEsito" role="status"></span></div>
   </form>`;
 }
@@ -4828,27 +5096,28 @@ function salvaIscrizioni() {
   const m = DB.manifestazioni.find(x => x.id === UI.manifSel); if (!m) return true;
   const a = f.dataset.atleta, e = $('#iEsito'), sess = sessioniManif(m);
   const [dd, ff] = ($('#iSess')?.value || sess[0].k).split('|'), base = { d: dd, f: ff };
-  const righe = $$('.isc-riga', f).map(r => { const ck = $('.isc-ck', r), tT = $('.isc-tempo', r).value.trim(); return { gara: ck.dataset.gara, si: ck.checked, tT: ck.checked ? tT : '', tempo: tT ? parseTempo(tT) : null, pos: parseNum($('.isc-pos', r).value) }; });
-  const errate = righe.filter(x => x.tT && !(x.tempo > 0)).map(x => x.gara);
-  if (errate.length) { e.textContent = `Tempo da sistemare (${errate.join(', ')}): scrivilo come 1:02.35 o 28.90.`; e.className = 'esito errore'; return false; }
+  const righe = $$('.isc-riga', f).map(r => { const ck = $('.isc-ck', r), tT = $('.isc-tempo', r).value.trim(), esito = esitoDa(tT); return { gara: ck.dataset.gara, si: ck.checked, tT: ck.checked ? tT : '', esito, tempo: tT && !esito ? parseTempoGara(tT) : null, pos: parseInt($('.isc-pos', r).value, 10) || null }; });
+  const errate = righe.filter(x => x.tT && !x.esito && !(x.tempo > 0)).map(x => x.gara);
+  if (errate.length) { e.textContent = `Tempo da sistemare (${errate.join(', ')}): scrivilo come 1'02"35, 1:02.35 o 28.90 (oppure SQ, ASS, RIT).`; e.className = 'esito errore'; return false; }
   let nuove = 0, tolte = 0; const tenute = [];
   for (const x of righe) {
     const esist = DB.gare.filter(g => g.manifId === m.id && g.atleta === a && g.gara === x.gara);
     if (x.si) {
       const s = sessioneProgramma(m, x.gara) || (esist[0] ? { d: dataRis(esist[0], m), f: fasciaGara(esist[0]) } : base);
-      const campi = { data: s.d, fascia: s.f, tempo: x.tempo > 0 ? x.tempo : null, posizione: x.pos || null };
-      if (esist.length) Object.assign(esist[0], campi);
-      else { DB.gare.push({ id: uid(), manifId: m.id, atleta: a, gara: x.gara, note: '', ...campi }); nuove++; }
+      const campi = { data: s.d, fascia: s.f, tempo: x.tempo > 0 ? x.tempo : null, posizione: x.esito ? null : x.pos || null };
+      const g = esist[0] || { id: uid(), manifId: m.id, atleta: a, gara: x.gara, note: '' };
+      Object.assign(g, campi); if (x.esito) g.esito = x.esito; else delete g.esito;
+      if (!esist.length) { DB.gare.push(g); nuove++; }
     } else if (esist.length) {
       // tolta la spunta: via l'iscrizione; un risultato con tempo o note si toglie solo con ✕ nel riepilogo
-      const via = new Set(esist.filter(g => !conTempo(g) && !g.note));
+      const via = new Set(esist.filter(g => iscrizione(g) && !g.note));
       if (via.size < esist.length) tenute.push(x.gara);
       DB.gare = DB.gare.filter(g => !via.has(g)); tolte += via.size;
     }
   }
   salvaGare();
   const sue = DB.gare.filter(g => g.manifId === m.id && g.atleta === a);
-  avviso(`${a}: ${sue.length} ${sue.length === 1 ? 'gara' : 'gare'}${sue.filter(conTempo).length ? `, ${sue.filter(conTempo).length} con il tempo` : ''}${nuove ? ` · +${nuove}` : ''}${tolte ? ` · −${tolte}` : ''}${tenute.length ? ` · ${tenute.join(', ')} ha già tempo o note: si toglie con ✕ nel riepilogo` : ''}`);
+  avviso(`${a}: ${sue.length} ${sue.length === 1 ? 'gara' : 'gare'}${sue.filter(conTempo).length ? `, ${sue.filter(conTempo).length} con il tempo` : ''}${nuove ? ` · +${nuove}` : ''}${tolte ? ` · −${tolte}` : ''}${tenute.length ? ` · ${tenute.join(', ')} ha già tempo o note: si toglie con ✕ nella tabella` : ''}`);
   return true;
 }
 function vaiAtleta(delta) {
@@ -4865,7 +5134,7 @@ function ripartizioneHTML(m, r) {
   const cella = (a, s) => ordinaGare(r.filter(g => g.atleta === a && dataRis(g, m) === s.d && fasciaGara(g) === s.f).map(g => g.gara)).map(esc).join(' · ');
   const piede = sess.map(s => { const x = r.filter(g => dataRis(g, m) === s.d && fasciaGara(g) === s.f), l = lavoroGara(m, s.d, s.f); const mm = l.atleti.length ? media([...l.per.values()].map(c => c.metri)) : 0;
     const na = new Set(x.map(g => g.atleta)).size; return `<td>${na} ${na === 1 ? 'atleta' : 'atleti'} · ${x.length} ${x.length === 1 ? 'gara' : 'gare'}<br><small class="muto">${num(mm)} m per atleta</small></td>`; }).join('');
-  return `<details class="ripart" ${UI.ripartChiusa?.[m.id] ? '' : 'open'} data-ripart="${esc(m.id)}"><summary>Ripartizione per mezza giornata</summary>
+  return `<details class="ripart" ${UI.ripartAperta?.[m.id] ? 'open' : ''} data-ripart="${esc(m.id)}"><summary>Ripartizione per mezza giornata</summary>
     <div class="tbl-wrap"><table class="tab-ripart"><thead><tr><th>Atleta</th>${sess.map(s => `<th>${esc(etSessione(m, s))}</th>`).join('')}</tr></thead>
     <tbody>${atl.map(a => `<tr><td class="nome-atl">${esc(a)}</td>${sess.map(s => `<td>${cella(a, s) || '<span class="muto">—</span>'}</td>`).join('')}</tr>`).join('')}</tbody>
     <tfoot><tr><th scope="row">Totale</th>${piede}</tr></tfoot></table></div></details>`;
@@ -4873,7 +5142,18 @@ function ripartizioneHTML(m, r) {
 function azioneGare(az, b) {
   if (az === 'gr-pdf-carica') { caricaIscrizioniPdf(); return; }
   if (az === 'gr-pdf-annulla') { UI.pdfIscr = null; render(); return; }
-  if (az === 'gr-modo') { if (UI.gareModo === 'atleta' && b.dataset.modo !== 'atleta' && !salvaIscrizioni()) return; UI.gareModo = b.dataset.modo; UI.progBozza = null; render(); return; }
+  if (az === 'gr-ris-carica') { caricaRisultatiPdf(); return; }
+  if (az === 'gr-ris-annulla') { UI.pdfRis = null; render(); return; }
+  if (az === 'gr-vista') { if (!salvaIscrizioni()) return; UI.gareVista = b.dataset.v === 'atleta' ? 'atleta' : 'manif'; render(); window.scrollTo({ top: 0 }); return; }
+  if (az === 'gr-trend') { UI.trendSel = b.dataset.k; render(); $('#secTrend')?.scrollIntoView({ block: 'start', behavior: 'smooth' }); return; }
+  if (az === 'gr-chiudi') { if (UI.gareModo === 'atleta' && !salvaIscrizioni()) return; UI.gareModo = ''; UI.garaModifica = null; UI.progBozza = null; UI.progLettura = null; render(); return; }
+  if (az === 'gr-modo') {
+    if (UI.gareModo === 'atleta' && !salvaIscrizioni()) return;
+    const nuovo = UI.gareModo === b.dataset.modo && !UI.pdfIscr && !UI.pdfRis && !UI.garaModifica ? '' : b.dataset.modo;
+    UI.gareModo = nuovo; UI.progBozza = null; UI.progLettura = null; UI.garaModifica = null; UI.pdfIscr = null; UI.pdfRis = null; UI.manifForm = null;
+    render(); if (nuovo) $('#pannelloGara')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    return;
+  }
   if (az === 'gr-prog-aggiungi') {
     const g = normGara($('#pNuova')?.value); if (!g) { $('#pNuova')?.focus(); return; }
     UI.progBozza = { mid: UI.manifSel, prog: leggiProgramma() };
@@ -4882,13 +5162,13 @@ function azioneGare(az, b) {
   }
   if (az === 'gr-iscr-va') { if (salvaIscrizioni()) vaiAtleta(Number(b.dataset.delta)); return; }
   if (az === 'gr-iscr-salva') { if (salvaIscrizioni()) render(); return; }
-  if (az === 'gr-nuova-manif') { UI.manifForm = 'nuova'; UI.garaModifica = null; render(); $('#mNome')?.focus(); }
+  if (az === 'gr-nuova-manif') { if (!salvaIscrizioni()) return; UI.manifForm = 'nuova'; UI.garaModifica = null; UI.pdfIscr = null; UI.pdfRis = null; UI.gareModo = ''; render(); $('#mNome')?.focus(); }
   else if (az === 'gr-annulla-manif') { UI.manifForm = null; render(); }
-  else if (az === 'gr-modifica-manif') { UI.manifForm = b.dataset.id; UI.manifSel = b.dataset.id; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); }
-  else if (az === 'gr-scegli-manif') { if (!salvaIscrizioni()) return; UI.manifSel = b.dataset.id; UI.manifForm = null; UI.garaModifica = null; UI.progBozza = null; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); ($('#rTempo') || $('#formIscr .isc-ck'))?.focus({ preventScroll: true }); }
+  else if (az === 'gr-modifica-manif') { if (!salvaIscrizioni()) return; UI.manifForm = b.dataset.id; UI.manifSel = b.dataset.id; UI.pdfIscr = null; UI.pdfRis = null; UI.gareModo = ''; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); }
+  else if (az === 'gr-scegli-manif') { if (!salvaIscrizioni()) return; UI.manifSel = b.dataset.id; UI.manifForm = null; UI.garaModifica = null; UI.progBozza = null; UI.progLettura = null; UI.gareModo = ''; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); }
   else if (az === 'gr-elimina-manif') confermaDoppia(b, () => { DB.gare = DB.gare.filter(g => g.manifId !== b.dataset.id); DB.manifestazioni = DB.manifestazioni.filter(m => m.id !== b.dataset.id); salvaGare(); render(); avviso('Manifestazione eliminata'); }, 'Elimina con i risultati');
-  else if (az === 'gr-modifica-ris') { const g = DB.gare.find(x => x.id === b.dataset.id); if (!g) return; UI.garaModifica = g.id; UI.manifSel = g.manifId; UI.manifForm = null; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); }
-  else if (az === 'gr-annulla-ris') { UI.garaModifica = null; render(); }
+  else if (az === 'gr-modifica-ris') { if (!salvaIscrizioni()) return; const g = DB.gare.find(x => x.id === b.dataset.id); if (!g) return; UI.garaModifica = g.id; UI.manifSel = g.manifId; UI.manifForm = null; UI.pdfIscr = null; UI.pdfRis = null; render(); $('#pannelloGara')?.scrollIntoView({ block: 'start' }); $('#rNote')?.focus({ preventScroll: true }); }
+  else if (az === 'gr-annulla-ris') { UI.garaModifica = null; UI.gareModo = ''; render(); }
   else if (az === 'gr-elimina-ris') confermaDoppia(b, () => { DB.gare = DB.gare.filter(g => g.id !== b.dataset.id); if (UI.garaModifica === b.dataset.id) UI.garaModifica = null; salvaGare(); render(); }, 'Elimina');
   else if (az === 'gr-aspetto') {
     const t = $('#rNote'); if (!t) return;
@@ -4897,10 +5177,24 @@ function azioneGare(az, b) {
   }
 }
 function cambioGare(el) {
-  if (el.id === 'pFoto') { const f = el.files?.[0]; el.value = ''; if (f) { UI.progBozza = { mid: UI.manifSel, prog: leggiProgramma() }; leggiProgrammaFile(f); } return true; }
+  if (el.id === 'pFoto') { const f = el.files?.[0]; el.value = ''; if (f && salvaIscrizioni()) { if ($('#formProg')) UI.progBozza = { mid: UI.manifSel, prog: leggiProgramma() }; leggiProgrammaFile(f); } return true; }
   if (el.id === 'gPdf') { const f = el.files?.[0]; el.value = ''; if (f && salvaIscrizioni()) apriPdfIscrizioni(f); return true; }
+  if (el.id === 'gRisPdf') { const f = el.files?.[0]; el.value = ''; if (f && salvaIscrizioni()) apriPdfRisultati(f); return true; }
   if (el.closest?.('#pdfIscr')) { leggiSceltePdf(); render(); return true; }
-  if (el.id === 'gManif') { if (UI.gareModo !== 'programma' && !salvaIscrizioni()) { el.value = UI.manifSel; return true; } UI.manifSel = el.value; UI.garaModifica = null; UI.progBozza = null; render(); return true; }
+  if (el.closest?.('#pdfRis')) {
+    if (el.classList.contains('pr-tempo')) {   // il tempo scritto torna nella forma 1:02.35 (o resta l'esito)
+      const v = el.value.trim(), es = esitoDa(v), t = es || !v ? null : parseTempoGara(v);
+      el.classList.toggle('errato', !!v && !es && !(t > 0));
+      if (t > 0) el.value = fmtTempo(t); else if (es) el.value = es;
+      leggiSceltePdfRis(); return true;
+    }
+    if (el.classList.contains('pr-pos')) { leggiSceltePdfRis(); return true; }
+    leggiSceltePdfRis(); render(); return true;
+  }
+  if (el.classList?.contains('t-tempo') || el.classList?.contains('t-pos')) { salvaCella(el); return true; }
+  if (el.id === 'grTrendAtleta') { UI.garaAtleta = el.value; UI.trendSel = ''; if (UI.atleta && UI.atleta !== el.value) UI.atleta = el.value; render(); return true; }
+  if (el.id === 'grStagione') { UI.gareStagione = el.value; UI.trendSel = ''; render(); return true; }
+  if (el.id === 'gManif') { if (!salvaIscrizioni()) { el.value = UI.manifSel; return true; } UI.manifSel = el.value; UI.garaModifica = null; UI.progBozza = null; UI.progLettura = null; UI.gareModo = ''; render(); return true; }
   if (el.id === 'iAtleta') { const nuovo = el.value; el.value = $('#formIscr')?.dataset.atleta || nuovo; if (!salvaIscrizioni()) return true; UI.iscrAtleta = nuovo; render(); return true; }
   if (el.id === 'iSess') { UI.iscrSess = el.value; return true; }
   if (el.id === 'rGara' && $('#rFascia')) {   // gara in programma: giorno e mezza giornata vengono dal programma
@@ -4911,8 +5205,6 @@ function cambioGare(el) {
   if (el.classList?.contains('isc-ck') || el.classList?.contains('isc-tempo') || el.classList?.contains('isc-pos')) return true;
   if (el.id === 'rGiorno') { UI.ultimoGiornoGara = el.value; return true; }
   if (el.id === 'rFascia') { UI.ultimaFasciaGara = el.value; return true; }
-  if (el.id === 'grAtletaProg') { UI.garaAtleta = el.value; UI.garaSel = ''; if (UI.atleta && UI.atleta !== el.value) UI.atleta = el.value; render(); return true; }
-  if (el.id === 'grGaraProg') { UI.garaSel = el.value; render(); return true; }
   return false;
 }
 
@@ -5021,7 +5313,7 @@ async function apriPdfIscrizioni(file) {
     const stessa = vicine.find(m => stessoNome(m.nome, letto.nome)) || (vicine.length === 1 ? vicine[0] : null);
     const vasca = letto.atleti.some(a => a.gare.some(g => g.gara === '100 MI')) ? 25 : 50;   // i 100 misti si nuotano solo in vasca corta
     UI.pdfIscr = { file: file.name, letto, sel: { manif: stessa ? stessa.id : 'nuova', nome: letto.nome || file.name.replace(/\.pdf$/i, ''), luogo: '', vasca, fine: letto.fine || '', sess: '', fuori: false } };
-    UI.manifForm = null; UI.garaModifica = null;
+    UI.manifForm = null; UI.garaModifica = null; UI.pdfRis = null; UI.gareModo = '';
     render(); $('#secGareIns')?.scrollIntoView({ block: 'start' });
   } catch (e) { avviso(e.message || 'PDF non leggibile'); }
 }
@@ -5049,7 +5341,7 @@ function anteprimaPdf(P) {
       ${letto.fine ? '' : `<label class="campo">Fino al (più giorni)<input type="date" id="pdfFine" value="${esc(sel.fine)}"></label>`}`}
       ${conProg ? '' : `<label class="campo" style="grid-column:span 2">Mezza giornata delle iscrizioni<select id="pdfSess">${sess.map(s => opt(s.k, sessDef, etSessione(finta, s))).join('')}</select></label>`}
     </div>
-    <p class="nota-piccola">${conProg ? 'Giorno e mezza giornata di ogni gara vengono dal programma della manifestazione.' : 'Dopo il caricamento, con «Programma per mezza giornata» dici in quale mezza giornata si nuota ogni gara: le iscrizioni si spostano da sole.'}${!m && sel.vasca === 25 && letto.atleti.some(a => a.gare.some(g => g.gara === '100 MI')) ? ' Vasca 25 m: nel programma ci sono i 100 misti.' : ''}</p>
+    <p class="nota-piccola">${conProg ? 'Giorno e mezza giornata di ogni gara vengono dall\'ordine gare della manifestazione.' : 'Dopo il caricamento, con l\'ordine gare (passo 2) ogni gara va nella sua mezza giornata: le iscrizioni si spostano da sole.'}${!m && sel.vasca === 25 && letto.atleti.some(a => a.gare.some(g => g.gara === '100 MI')) ? ' Vasca 25 m: nel programma ci sono i 100 misti.' : ''}</p>
     <h4 class="etichetta">Della tua rosa · ${rosa.length} ${rosa.length === 1 ? 'atleta' : 'atleti'}</h4>
     ${rosa.length ? `<div class="tbl-wrap"><table class="tab-pdf"><thead><tr><th>Atleta</th><th>Gare</th></tr></thead><tbody>${rosa.map(a => `<tr><td class="nome-atl">${esc(a.rosa)}${nomeDiverso(a)}</td><td>${a.gare.map(g => gia(a.rosa, g.gara) ? `<span class="g-n muto" title="già iscritto">${esc(g.gara)} ✓</span>` : `<span class="g-n">${esc(g.gara)}</span>`).join(' · ')}</td></tr>`).join('')}</tbody></table></div>` : '<p class="vuoto">Nessun atleta del PDF è nella rosa.</p>'}
     ${senza.length ? `<p class="nota-piccola">Della rosa senza iscrizioni: ${esc(senza.join(', '))}.</p>` : ''}
@@ -5095,11 +5387,223 @@ function caricaIscrizioniPdf() {
     }
   }
   UI.pdfIscr = null; UI.manifSel = m.id; UI.manifForm = null;
-  UI.gareModo = Object.keys(programma(m)).length ? 'atleta' : 'programma';
+  UI.gareModo = '';
   salvaGare();
   if (UI.preset === 'custom' && (m.data > UI.a || fineManif(m) < UI.da)) UI.preset = 'tutto';
   render(); $('#secGareIns')?.scrollIntoView({ block: 'start' });
-  avviso(`${n} ${n === 1 ? 'iscrizione caricata' : 'iscrizioni caricate'} in «${m.nome}»${creata ? ' (nuova)' : ''}${nuovi.length ? `, ${nuovi.length} atleti aggiunti alla rosa` : ''}${UI.gareModo === 'programma' ? '. Ora scegli in quale mezza giornata si nuota ogni gara' : ''}`);
+  avviso(`${n} ${n === 1 ? 'iscrizione caricata' : 'iscrizioni caricate'} in «${m.nome}»${creata ? ' (nuova)' : ''}${nuovi.length ? `, ${nuovi.length} atleti aggiunti alla rosa` : ''}${Object.keys(programma(m)).length ? '' : '. Ora carica l\'ordine gare (passo 2): ogni gara va nella sua mezza giornata'}`);
+}
+
+/* ---- PDF dei risultati: tutti gli atleti in gara, si prendono quelli della squadra ---- */
+// Risultati FIN (Microplus e simili): titolo della gara («100 m Misti - Femmine …», «Gara 5 - 50 Dorso»), poi per ogni
+// atleta posizione, corsia, COGNOME Nome, anno, società, passaggi e tempo d'arrivo (le gare lunghe vanno su più righe).
+// Gli atleti della squadra si riconoscono dal nome nella rosa; il tempo d'arrivo è il più lungo tra quelli plausibili
+// per la distanza nelle righe dell'atleta (i passaggi sono più corti). SQ, ASS, RIT al posto del tempo sono l'esito.
+const RE_EVENTO_RIS = /(?:^|[\s(\-–:.)])(4\s*[x×]\s*(?:25|50|100|200)|25|50|100|200|400|800|1500)\s*(?:m|mt|metri)?\.?\s*(stile\s+libero|stile|sl|dorso|do|rana|ra|farfalla|delfino|fa|misti|mista|mx|mi)(?![a-zà-ü])/i;
+const RE_TEMPO_RIS = /(?<![\d:'’.,/])(?:(\d{1,2})\s?[:'’]\s?)?(\d{1,2})[.,"](\d{2})(?!\d|[.,/-]\d)/g;
+const tokNome = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/[^a-z]+/).filter(Boolean);
+const tempiIn = t => [...String(t).matchAll(RE_TEMPO_RIS)].filter(x => !x[1] || Number(x[2]) < 60).map(x => Math.round(((Number(x[1]) || 0) * 60 + Number(x[2]) + Number(x[3]) / 100) * 100) / 100);
+const annoNascita = t => /(?<![\d/.\-:'’])(19[5-9]\d|20[0-3]\d)(?![\d/.\-:'’])/.test(t);
+// esito scritto nella riga: SQ, ASS, RIT (e simili); FG = fuori gara, il tempo vale
+function esitoIn(t) {
+  const m = String(t).match(/(?:^|\s)(SQ|SQU|SQUAL\.?|DSQ|DQ|ASS|ASSENTE|N\.?P\.?|DNS|RIT|DNF|FG|F\.G\.)(?=\s|$)/) || String(t).match(/(?:^|\s)(squalificat[oa]|assente|ritirat[oa]|non partit[oa])(?=\s|$)/i);
+  if (!m) return null;
+  return /^F\.?G/i.test(m[1]) ? 'FG' : esitoDa(m[1].replace(/\.$/, ''));
+}
+// titolo di una gara: distanza e stile (le staffette si riconoscono ma non si caricano)
+function eventoRis(t) {
+  const m = t.match(RE_EVENTO_RIS); if (!m) return null;
+  // in testa alla riga («100 m Rana …», «Gara 5 - 50 Dorso», «12 200 Misti»), oppure in una riga senza tempi né anno di nascita
+  const prima = t.slice(0, m.index).trim();
+  const inTesta = /^(?:(?:gara|evento|prova)\s*n?[°.]?\s*)?\d{0,3}\s*[-–:.)]?\s*(?:staffetta)?$/i.test(prima);
+  if (!inTesta && (tempiIn(t).length || annoNascita(t))) return null;   // riga di un atleta, non un titolo
+  const dist = m[1].replace(/\s/g, '').replace('×', 'x');
+  return { gara: normGara(`${dist} ${STILE_PROG(m[2].toLowerCase())}`), staffetta: /x/i.test(dist) };
+}
+// atleta della rosa nella riga: tutte le parti del nome (il nome può essere puntato: «ROSSI M.»)
+function atletaInRiga(t, rosaTok) {
+  const lt = tokNome(t), set = new Set(lt);
+  let best = null;
+  for (const r of rosaTok) {
+    if (r.tok.length < 2) continue;
+    const mancano = r.tok.filter(x => !set.has(x));
+    const ok = !mancano.length || (mancano.length === 1 && mancano[0] !== r.tok[0] && lt.some(w => w.length === 1 && w === mancano[0][0]));
+    if (ok && (!best || r.tok.length > best.tok.length || (!mancano.length && best.puntato))) best = { ...r, puntato: mancano.length > 0 };
+  }
+  return best;
+}
+// inizio della riga di un altro atleta: posizione («12 », «3°»), «COGNOME Nome … anno», o l'esito in testa
+const nuovaRigaAtleta = t => /^\d{1,3}\s*[°ºª.)]?\s+(?:\d{1,2}\s+)?\p{L}/u.test(t) || (annoNascita(t) && /\b\p{Lu}{2,}\s+\p{Lu}\p{Ll}/u.test(t)) || /^(SQ|ASS|RIT|DSQ|DNS|DNF|NP|FG)\s/.test(t);
+function nomeManifDaRighe(righe) {
+  for (const t of righe.slice(0, 6)) {
+    const s = t.replace(/\d{1,2}[/.-]\d{1,2}[/.-]\d{4}/g, ' ').replace(/\bv(?:asca)?\.?\s*(25|50)\s*(?:m|mt|metri)\b/gi, ' ').replace(/\b(risultati|classifica|classifiche|ordine d[ei] arrivo)\b/gi, ' ').replace(/[\s–\-·|,]+$/g, '').replace(/^[\s–\-·|,]+/, '').replace(/\s+/g, ' ').trim();
+    if (s.replace(/[^\p{L}]/gu, '').length >= 5 && !RE_EVENTO_RIS.test(s) && !/^pag/i.test(s)) return titoloPdf(s);
+  }
+  return '';
+}
+// righe di testo → { nome, data, vasca, eventi: [gare], trovati: [{ atleta, gara, data, tempo, esito, pos, club, testo }] }
+function leggiRisultati(righe, rosa = elencoAtleti()) {
+  const rosaTok = rosa.map(nome => ({ nome, tok: tokNome(nome) }));
+  const out = { nome: nomeManifDaRighe(righe), data: null, vasca: null, eventi: [], trovati: [], societa: '' };
+  for (const t of righe.slice(0, 12)) {
+    if (!out.data) out.data = dataIt(t);
+    const v = t.match(/\bv(?:asca)?\.?\s*(25|50)\s*(?:m|mt|metri)\b/i) || t.match(/\b(25|50)\s*(?:m|mt|metri)\b(?=.*\bvasca\b)/i);
+    if (!out.vasca && v) out.vasca = Number(v[1]);
+    if (!out.vasca && /vasca\s+corta/i.test(t)) out.vasca = 25;
+    if (!out.vasca && /vasca\s+lunga/i.test(t)) out.vasca = 50;
+  }
+  const eventi = new Set();
+  let ev = null, evData = null, cur = null;
+  const chiudi = () => {
+    if (!cur) return;
+    const testo = cur.righe.join(' '), dist = distanzaGara(cur.gara) || 50;
+    const tempi = tempiIn(testo).filter(x => x >= dist * 0.38 && x <= dist * 2.6);
+    const es = esitoIn(testo), esito = es && es !== 'FG' ? es : null;
+    const pos = cur.righe[0].match(/^(\d{1,3})\s*[°ºª.)]?\s/)?.[1];
+    const club = new Set(tokNome(testo.replace(RE_TEMPO_RIS, ' ')).filter(w => w.length > 1 && !cur.tok.includes(w) && !['ita', 'sq', 'ass', 'rit', 'fg', 'np'].includes(w)));
+    out.trovati.push({ atleta: cur.atleta, gara: cur.gara, data: cur.data, tempo: esito ? null : tempi.length ? Math.max(...tempi) : null, esito, pos: !esito && pos && Number(pos) <= 300 ? Number(pos) : null, club, testo: cur.righe.join('\n') });
+    cur = null;
+  };
+  for (const grezza of righe) {
+    const t = String(grezza).replace(/\s+/g, ' ').trim(); if (!t) continue;
+    const e = eventoRis(t);
+    if (e) { chiudi(); ev = e; evData = dataIt(t) || evData; eventi.add(e.gara); continue; }
+    if (/^(non\s+classificat\w*|squalificat\w*|assenti|ritirat\w*|fuori\s+gara)$/i.test(t)) { chiudi(); continue; }
+    const r = ev && !ev.staffetta ? atletaInRiga(t, rosaTok) : null;
+    if (r) { chiudi(); cur = { atleta: r.nome, tok: r.tok, gara: ev.gara, data: evData, righe: [t] }; continue; }
+    if (cur) { if (nuovaRigaAtleta(t)) chiudi(); else { cur.righe.push(t); if (cur.righe.length >= 5) chiudi(); } }
+  }
+  chiudi();
+  out.eventi = [...eventi];
+  // stesso atleta, stessa gara, stesso tempo (risultati per serie e classifica nello stesso PDF): una volta sola
+  const visti = new Set();
+  out.trovati = out.trovati.filter(x => { const k = `${x.atleta}|${x.gara}|${x.tempo ?? x.esito ?? ''}`; if (visti.has(k)) return false; visti.add(k); return true; });
+  // società della squadra: le parole che tornano in quasi tutti; chi non le ha è forse un omonimo di un'altra società
+  const n = out.trovati.length;
+  if (n >= 3) {
+    const freq = new Map();
+    for (const x of out.trovati) for (const w of x.club) freq.set(w, (freq.get(w) || 0) + 1);
+    const dom = [...freq].filter(([, c]) => c >= n * 0.6).map(([w]) => w);
+    if (dom.length) for (const x of out.trovati) x.altraSocieta = dom.filter(w => x.club.has(w)).length < dom.length / 2;
+    out.societa = dom.join(' ');
+  }
+  for (const x of out.trovati) delete x.club;
+  return out;
+}
+async function apriPdfRisultati(file) {
+  if (!file) return;
+  let ultimo = -1;
+  const avanza = p => { const v = Math.round(p * 100); if (v >= ultimo + 10 || v === 100) { ultimo = v; avviso(`Leggo i risultati… ${v} %`); } };
+  avviso('Leggo i risultati…');
+  try {
+    const pdf = /pdf/i.test(file.type) || /\.pdf$/i.test(file.name);
+    let righe;
+    if (pdf) { righe = await righePdf(file); if (righe.join('').replace(/\s/g, '').length < 40) righe = (await testoDaPdf(file, avanza)).testo.split('\n'); }
+    else righe = (await ocr([await canvasDaImmagine(file)], avanza)).split('\n');
+    const letto = leggiRisultati(righe);
+    if (!letto.eventi.length) { avviso('Nel file non trovo gare (es. «100 m Stile Libero»): serve il PDF dei risultati.'); return; }
+    if (!letto.trovati.length) { avviso(`Lette ${letto.eventi.length} gare, ma nessun atleta della rosa: controlla che in Dati → Rosa i nomi siano «Cognome Nome», come nei risultati.`); return; }
+    // manifestazione: quella aperta, se le date tornano; altrimenti una vicina con lo stesso nome; altrimenti nuova
+    const d = letto.data, aperta = DB.manifestazioni.find(m => m.id === UI.manifSel);
+    const vicina = m => d && d >= addDays(m.data, -3) && d <= addDays(fineManif(m), 3);
+    let mid = 'nuova';
+    if (aperta && (!d || vicina(aperta))) mid = aperta.id;
+    else { const v = DB.manifestazioni.filter(vicina), s = v.find(m => stessoNome(m.nome, letto.nome)) || (v.length === 1 ? v[0] : null); if (s) mid = s.id; }
+    UI.pdfRis = {
+      file: file.name || 'risultati', letto, testo: righe.slice(0, 800).join('\n'),
+      righe: letto.trovati.map(x => ({ ...x, si: !x.altraSocieta, tT: x.tempo ? fmtTempo(x.tempo) : x.esito || '', pT: x.pos ?? '' })),
+      sel: { manif: mid, nome: letto.nome || (file.name || '').replace(/\.pdf$/i, '') || 'Manifestazione', luogo: '', vasca: letto.vasca || aperta?.vasca || 25 },
+    };
+    UI.pdfIscr = null; UI.manifForm = null; UI.garaModifica = null; UI.gareModo = '';
+    render(); $('#secGareIns')?.scrollIntoView({ block: 'start' });
+    avviso(`Risultati letti: ${letto.trovati.length} della squadra in ${letto.eventi.length} gare. Controlla e salva`);
+  } catch (e) { avviso(e.message || 'File non leggibile'); }
+}
+// cosa succede a ogni riga salvando: aggiorna un'iscrizione o un risultato già presente, oppure è una gara nuova
+function pianoRisultati(m, righe) {
+  const usati = new Set();
+  return righe.map(r => {
+    if (!m || !r.si) return { azione: m ? '' : 'nuovo' };
+    const es = esitoDa(r.tT), t = es || !r.tT ? null : parseTempoGara(r.tT);
+    const cand = DB.gare.filter(g => g.manifId === m.id && g.atleta === r.atleta && g.gara === r.gara && !usati.has(g.id));
+    const uguale = cand.find(g => (t > 0 && conTempo(g) && Math.abs(g.tempo - t) < 0.005) || (es && g.esito === es));
+    const g = uguale || cand.find(iscrizione) || cand[0];
+    if (g) usati.add(g.id);
+    return { azione: !g ? 'nuovo' : uguale ? 'uguale' : 'aggiorna', g };
+  });
+}
+function anteprimaRis(P) {
+  const { letto, sel, righe } = P;
+  const m = sel.manif !== 'nuova' ? DB.manifestazioni.find(x => x.id === sel.manif) : null;
+  const piano = pianoRisultati(m, righe);
+  const opzioni = [opt('nuova', sel.manif, `Nuova: ${sel.nome}`), ...ordManif().map(x => opt(x.id, sel.manif, `${fmtPeriodoBreve(x)} · ${x.nome} · ${x.vasca} m`))].join('');
+  const nota = (r, p) => [r.altraSocieta ? '<span class="avviso-pic">altra società?</span>' : '',
+    !r.si ? 'non si salva' : p.azione === 'uguale' ? 'già salvato' : p.azione === 'aggiorna' ? (iscrizione(p.g) ? 'era iscritto' : `ora ${esc(valoreTempo(p.g) || '—')}: si sostituisce`) : 'gara nuova',
+    r.tempo == null && !r.esito ? '<span class="avviso-pic">tempo non letto: scrivilo</span>' : ''].filter(Boolean).join(' · ');
+  const daSalvare = righe.filter((r, i) => r.si && piano[i].azione !== 'uguale').length;
+  const letti = new Set(righe.map(r => `${r.atleta}|${r.gara}`));
+  const senza = m ? DB.gare.filter(g => g.manifId === m.id && iscrizione(g) && !letti.has(`${g.atleta}|${g.gara}`)) : [];
+  const vascaDiversa = m && letto.vasca && letto.vasca !== m.vasca;
+  return `<div class="form pdf-iscr" id="pdfRis">
+    <h4 class="etichetta" style="margin:0">Risultati dal file · ${esc(P.file)}</h4>
+    <p class="nota" style="margin:4px 0 10px"><b>${esc(letto.nome || 'Manifestazione')}</b>${letto.data ? ` · ${fmtDataAnno(letto.data)}` : ''}${letto.vasca ? ` · vasca ${letto.vasca} m` : ''} · ${plur(letto.eventi.length, 'gara letta', 'gare lette')}, ${plur(righe.length, 'risultato', 'risultati')} della squadra${letto.societa ? ` (${esc(titoloPdf(letto.societa))})` : ''}. Gli altri atleti del file non si caricano.</p>
+    <div class="campi">
+      <label class="campo" style="grid-column:span 2">Manifestazione<select id="prManif">${opzioni}</select></label>
+      ${m ? '' : `<label class="campo" style="grid-column:span 2">Nome<input type="text" id="prNome" value="${esc(sel.nome)}"></label>
+      <label class="campo">Luogo<input type="text" id="prLuogo" value="${esc(sel.luogo)}" placeholder="facoltativo"></label>
+      <label class="campo">Vasca<select id="prVasca">${opt(25, sel.vasca, '25 m')}${opt(50, sel.vasca, '50 m')}</select></label>`}
+    </div>
+    ${vascaDiversa ? `<p class="nota-piccola avviso-pic">Nel file la vasca è da ${letto.vasca} m, la manifestazione scelta è in vasca da ${m.vasca} m: controlla che sia quella giusta.</p>` : ''}
+    <p class="nota-piccola">Controlla i tempi (si correggono con la tastiera normale: 1'02"35, 1:02.35, SQ, ASS…) e togli la spunta a chi non è della squadra.</p>
+    <div class="tbl-wrap"><table class="tab-pdf tab-pdf-ris"><thead><tr><th><span class="vh">Salva</span></th><th>Atleta</th><th>Gara</th><th class="num">Tempo</th><th class="num">Pos.</th></tr></thead>
+    <tbody>${righe.map((r, i) => `<tr class="${r.si ? '' : 'spento'}"><td class="pr-ck"><input type="checkbox" class="pr-si" data-i="${i}" ${r.si ? 'checked' : ''} aria-label="Salva ${esc(r.atleta)} ${esc(r.gara)}"></td>
+      <td class="nome-atl">${esc(r.atleta)}<br><small class="muto">${nota(r, piano[i])}</small></td><td class="pr-gara">${esc(r.gara)}</td>
+      <td class="num pr-tc"><input type="text" class="pr-tempo" data-i="${i}" value="${esc(r.tT)}" placeholder="tempo" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next" aria-label="Tempo ${esc(r.atleta)} ${esc(r.gara)}"></td>
+      <td class="num pr-pc"><input type="text" class="pr-pos" data-i="${i}" value="${esc(String(r.pT ?? ''))}" placeholder="pos." inputmode="numeric" autocomplete="off" enterkeyhint="next" aria-label="Posizione ${esc(r.atleta)} ${esc(r.gara)}"></td></tr>`).join('')}</tbody></table></div>
+    ${senza.length ? `<p class="nota-piccola">Iscritti senza risultato nel file: ${esc(senza.map(g => `${g.atleta} ${g.gara}`).join(', '))}.</p>` : ''}
+    <details class="pdf-fuori"><summary>Testo letto dal file</summary><pre class="prog-testo">${esc(P.testo || '')}</pre></details>
+    <div class="azioni"><button type="button" class="btn primario" data-action="gr-ris-carica" ${daSalvare ? '' : 'disabled'}>${daSalvare ? `Salva ${plur(daSalvare, 'risultato', 'risultati')}` : 'Niente di nuovo da salvare'}</button><button type="button" class="btn" data-action="gr-ris-annulla">Annulla</button><span class="esito" id="prEsito" role="status"></span></div>
+  </div>`;
+}
+function leggiSceltePdfRis() {
+  const P = UI.pdfRis; if (!P) return;
+  const S = P.sel;
+  if ($('#prManif')) S.manif = $('#prManif').value;
+  if ($('#prNome')) S.nome = $('#prNome').value.trim();
+  if ($('#prLuogo')) S.luogo = $('#prLuogo').value.trim();
+  if ($('#prVasca')) S.vasca = Number($('#prVasca').value);
+  $$('#pdfRis .pr-si').forEach(c => { P.righe[c.dataset.i].si = c.checked; });
+  $$('#pdfRis .pr-tempo').forEach(c => { P.righe[c.dataset.i].tT = c.value.trim(); });
+  $$('#pdfRis .pr-pos').forEach(c => { P.righe[c.dataset.i].pT = c.value.trim(); });
+}
+function caricaRisultatiPdf() {
+  leggiSceltePdfRis();
+  const P = UI.pdfRis; if (!P) return;
+  const e = $('#prEsito');
+  const sbagliati = P.righe.filter(r => r.si && r.tT && !esitoDa(r.tT) && !(parseTempoGara(r.tT) > 0));
+  if (sbagliati.length) { e.textContent = `Tempo da sistemare: ${sbagliati.map(r => `${r.atleta} ${r.gara}`).join(', ')}.`; e.className = 'esito errore'; return; }
+  let m = P.sel.manif !== 'nuova' ? DB.manifestazioni.find(x => x.id === P.sel.manif) : null, creata = false;
+  if (!m) { m = { id: uid(), data: P.letto.data || oggiStr(), nome: P.sel.nome || 'Manifestazione', luogo: P.sel.luogo || '', vasca: P.sel.vasca === 50 ? 50 : 25 }; DB.manifestazioni.push(m); creata = true; }
+  // gare di un altro giorno della stessa manifestazione (PDF di più giornate): la manifestazione si allarga
+  for (const r of P.righe) if (r.si && r.data && r.data > fineManif(m) && giorniFra(m.data, r.data) < CONFIG.gara.maxGiorni) allargaManif(m, r.data);
+  const piano = pianoRisultati(m, P.righe);
+  let agg = 0, nuovi = 0, uguali = 0;
+  P.righe.forEach((r, i) => {
+    if (!r.si) return;
+    const es = esitoDa(r.tT), t = es || !r.tT ? null : parseTempoGara(r.tT), pos = parseInt(String(r.pT).replace(/[°º.]/g, ''), 10) || null;
+    const p = piano[i];
+    if (p.azione === 'uguale') { if (pos && !es && p.g.posizione !== pos) p.g.posizione = pos; uguali++; return; }
+    const campi = { tempo: t > 0 ? t : null, posizione: es ? null : pos };
+    if (p.g) { Object.assign(p.g, campi); if (es) p.g.esito = es; else delete p.g.esito; agg++; return; }
+    const s = sessioneProgramma(m, r.gara) || { d: r.data && giorniManif(m).includes(r.data) ? r.data : m.data, f: 'Mattino' };
+    DB.gare.push({ id: uid(), manifId: m.id, data: s.d, fascia: s.f, atleta: r.atleta, gara: r.gara, ...campi, ...(es ? { esito: es } : {}), note: '' }); nuovi++;
+  });
+  UI.pdfRis = null; UI.manifSel = m.id; UI.manifForm = null; UI.gareModo = '';
+  salvaGare();
+  if (UI.preset === 'custom' && (m.data > UI.a || fineManif(m) < UI.da)) UI.preset = 'tutto';
+  render(); $('#secGareTab')?.scrollIntoView({ block: 'start' });
+  const A = analisiGare(), pb = DB.gare.filter(g => g.manifId === m.id && A.get(g.id)?.stato === 'pb').length;
+  avviso(`Risultati salvati in «${m.nome}»${creata ? ' (nuova)' : ''}: ${agg} aggiornati, ${nuovi} nuovi${uguali ? `, ${uguali} già presenti` : ''}${pb ? ` · ${plur(pb, 'personale', 'personali')}` : ''}`);
 }
 
 /* ---- CSV ---- */
@@ -5110,7 +5614,7 @@ function esportaGare() {
   const mp = manifPerId();
   const righe = DB.gare.map(g => ({ g, m: mp.get(g.manifId) })).filter(x => x.m).map(x => ({ ...x, d: dataRis(x.g, x.m) }))
     .sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : FASCE_GARA.indexOf(fasciaGara(a.g)) - FASCE_GARA.indexOf(fasciaGara(b.g)) || a.g.atleta.localeCompare(b.g.atleta, 'it')))
-    .map(({ g, m, d }) => [d, fasciaGara(g).toLowerCase(), m.nome, m.luogo || '', m.vasca, g.atleta, g.gara, conTempo(g) ? fmtTempoIT(g.tempo) : '', g.posizione ?? '', g.note || '', fineManif(m) > m.data ? fineManif(m) : '']);
+    .map(({ g, m, d }) => [d, fasciaGara(g).toLowerCase(), m.nome, m.luogo || '', m.vasca, g.atleta, g.gara, conTempo(g) ? fmtTempoIT(g.tempo) : g.esito || '', g.posizione ?? '', g.note || '', fineManif(m) > m.data ? fineManif(m) : '']);
   if (!righe.length) { avviso('Nessun risultato da esportare.'); return; }
   scarica(`gare_${oggiStr()}.csv`, toCSV(COL_GARE, righe));
 }
@@ -5140,9 +5644,9 @@ function importaGare(testo, modo) {
   let ok = 0; const err = [], esclusi = new Set();
   let iscr = 0;
   for (const r of righe) {
-    const data = parseData(r.data), testoT = String(r.tempo || '').trim(), tempo = testoT ? parseTempo(testoT) : null, vasca = parseNum(r.vasca) === 25 ? 25 : 50;
+    const data = parseData(r.data), testoT = String(r.tempo || '').trim(), esito = esitoDa(testoT), tempo = testoT && !esito ? parseTempoGara(testoT) : null, vasca = parseNum(r.vasca) === 25 ? 25 : 50;
     const fino = r.fino_al ? parseData(r.fino_al) : null;
-    if (!data || !r.manifestazione || !r.atleta || !r.gara || (testoT && !(tempo > 0))) { err.push(`riga ${r._riga}`); continue; }
+    if (!data || !r.manifestazione || !r.atleta || !r.gara || (testoT && !esito && !(tempo > 0))) { err.push(`riga ${r._riga}`); continue; }
     // nome come nella rosa (maiuscole, accenti, nome scritto in un altro modo): niente doppioni dello stesso atleta
     r.atleta = atletaDaNome(r.atleta) || r.atleta.trim().replace(/\s+/g, ' ');
     if ((DB.rimossi || []).includes(r.atleta)) { esclusi.add(r.atleta); continue; }
@@ -5151,8 +5655,8 @@ function importaGare(testo, modo) {
     allargaManif(m, data);
     if (fino && fino > data && giorniFra(m.data, fino) < CONFIG.gara.maxGiorni) allargaManif(m, fino);
     if (!elencoAtleti().includes(r.atleta)) DB.atleti.push(r.atleta);
-    DB.gare.push({ id: uid(), manifId: m.id, data, fascia: fasciaDa(r.mezza_giornata), atleta: r.atleta, gara: r.gara.toUpperCase(), tempo: tempo > 0 ? tempo : null, posizione: parseNum(r.posizione) || null, note: r.note_tecniche || r.note || '' });
-    ok++; if (!(tempo > 0)) iscr++;
+    DB.gare.push({ id: uid(), manifId: m.id, data, fascia: fasciaDa(r.mezza_giornata), atleta: r.atleta, gara: r.gara.toUpperCase(), tempo: tempo > 0 ? tempo : null, posizione: esito ? null : parseNum(r.posizione) || null, note: r.note_tecniche || r.note || '', ...(esito ? { esito } : {}) });
+    ok++; if (!(tempo > 0) && !esito) iscr++;
   }
   salvaGare(); if (UI.preset === 'custom') UI.preset = 'tutto'; render();
   logIO(`Gare: ${ok} risultati importati${iscr ? ` (${iscr} iscrizioni senza tempo)` : ''}.` + (err.length ? ` Righe scartate (data, tempo o campi mancanti): ${err.slice(0, 8).join(', ')}${err.length > 8 ? '…' : ''}.` : '') + (esclusi.size ? ` Esclusi perché tolti dalla rosa: ${[...esclusi].join(', ')}.` : ''), !ok);
@@ -5857,7 +6361,7 @@ function foglioInDb(j) {
     FOGLIO.righeGare.get(m.id).push(String(r.id));
     if (r.Data && (!m.data || r.Data < m.data)) { if (m.data && !m.fine) m.fine = m.data; m.data = r.Data; }
     if (r.Data && r.Data > fineManif(m)) m.fine = r.Data;
-    if (rid && (r.Atleta || r.Gara)) d.gare.push({ id: String(r.id), manifId: m.id, data: r.Data || m.data, fascia: fasciaRiga(r, m.id), atleta: testoF(r.Atleta).trim(), gara: testoF(r.Gara).trim(), tempo: numO(r['Tempo (s)']), posizione: numO(r.Posizione), note: testoF(r['Note tecniche']).trim() });
+    if (rid && (r.Atleta || r.Gara)) d.gare.push({ id: String(r.id), manifId: m.id, data: r.Data || m.data, fascia: fasciaRiga(r, m.id), atleta: testoF(r.Atleta).trim(), gara: testoF(r.Gara).trim(), tempo: numO(r['Tempo (s)']), posizione: numO(r.Posizione), note: testoF(r['Note tecniche']).trim(), ...(esitoDa(testoF(r['Tempo (s)'])) ? { esito: esitoDa(testoF(r['Tempo (s)'])) } : {}) });
   };
   for (const r of j.gare || []) {
     const [m0, rid] = String(r.id).split('|');
@@ -5959,7 +6463,7 @@ function docInOps(p, body, prima) {
     const m = body.manifestazione, base = d => ({ Data: d, Manifestazione: m.nome, Luogo: m.luogo || '', 'Vasca (25/50)': m.vasca });
     // ogni risultato con il suo giorno di gara; tempo vuoto = iscrizione
     const righe = (body.risultati || []).map(g => ({ id: idRiga(g),
-      valori: { ...base(giornoGara(g, m)), 'Mezza giornata': fasciaGara(g), Atleta: g.atleta, Gara: g.gara, 'Tempo (s)': g.tempo ?? '', Posizione: g.posizione ?? '', 'Note tecniche': g.note || '' } }));
+      valori: { ...base(giornoGara(g, m)), 'Mezza giornata': fasciaGara(g), Atleta: g.atleta, Gara: g.gara, 'Tempo (s)': g.tempo ?? g.esito ?? '', Posizione: g.posizione ?? '', 'Note tecniche': g.note || '' } }));
     if (!righe.length) righe.push({ id: `${mid}|`, valori: { ...base(m.data), 'Mezza giornata': '', Atleta: '', Gara: '', 'Tempo (s)': '', Posizione: '', 'Note tecniche': '' } });
     return [{ t: 'gare', manifId: mid, togli, righe }, ...opDato];
   }
@@ -6446,6 +6950,7 @@ function legaEventi() {
     else if (az === 'svuota') confermaDoppia(b, () => { DB = { ...dbVuoto(), esempio: DB.esempio }; salva(); UI.preset = 'tutto'; UI.atleta = ''; UI.fase = ''; render(); avviso('Tutti i dati sono stati cancellati'); }, 'Confermi? Non si può annullare');
   });
   vista.addEventListener('keydown', e => {
+    if (tastoGare(e)) return;
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const riga = e.target.closest('tr[data-atleta], tr[data-atleta-test]');
     if (riga && e.target === riga) { e.preventDefault(); riga.click(); }
@@ -6462,7 +6967,7 @@ function legaEventi() {
   });
   vista.addEventListener('toggle', e => {
     if (e.target.dataset?.rpeBox) UI.rpeAperto = e.target.open ? e.target.dataset.rpeBox : null;
-    if (e.target.dataset?.ripart) { UI.ripartChiusa = UI.ripartChiusa || {}; UI.ripartChiusa[e.target.dataset.ripart] = !e.target.open; }
+    if (e.target.dataset?.ripart) { UI.ripartAperta = UI.ripartAperta || {}; UI.ripartAperta[e.target.dataset.ripart] = e.target.open; }
   }, true);
   // import di file (in qualunque scheda)
   vista.addEventListener('change', async e => {

@@ -827,6 +827,33 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
   .tab-pdf-ris td.pr-pc { grid-area: pos; }
   .tab-pdf-ris .pr-tempo, .tab-pdf-ris .pr-pos { width: 100%; }
 }
+
+/* equivalenze delle zone e modello a 3 zone (TID) */
+.guida-zone tr.z-fuori td { color: var(--ink-2); background: var(--surface-2); }
+.tid-box { margin-top: 14px; }
+.tid-box h4.etichetta { margin: 0 0 6px; }
+.tid-tab th small { font-size: 11px; color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 500; }
+.tid-tab td .stato { white-space: nowrap; }
+.guida-zone .guida-txt { white-space: normal; min-width: 260px; max-width: 520px; line-height: 1.35; }
+.guida-zone table.guida td:nth-child(2) { white-space: normal; min-width: 140px; }
+@media (max-width: 560px) {
+  .tid-tab th, .tid-tab td { padding-left: 5px; padding-right: 5px; }
+  .tid-tab td.tid-forma { white-space: normal; }
+}
+.tid-tab td.tid-forma { line-height: 1.5; }
+.tid-tab thead th:last-child { white-space: normal; min-width: 96px; }
+
+/* gruppi di lavoro: chi fa quale allenamento */
+.gruppi-giorno { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; background: var(--surface-2); }
+.gruppi-giorno.da-fare { border: 2px solid var(--warn); }
+.gruppi-giorno > summary { cursor: pointer; min-height: 40px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; color: var(--ink-2); }
+.avviso-gruppi { color: var(--warn-ink); font-weight: 600; }
+.tab-gruppi th, .tab-gruppi td { padding: 5px 8px; }
+.tab-gruppi tbody th { font-weight: 600; text-align: left; text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--ink); white-space: nowrap; }
+.tab-gruppi tr.gr-assente th { color: var(--muted); font-weight: 500; }
+.tab-gruppi input[type=radio] { width: 20px; height: 20px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.tab-gruppi thead th small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+.tab-gruppi { width: auto; min-width: min(100%, 420px); }
 </style>
 </head>
 <body>
@@ -930,27 +957,40 @@ tfoot tr.tot td, .mix-tab tfoot td { font-weight: 600; color: var(--ink); border
    ===================================================================== */
 
 // data e ora della versione (la scrivono gli script di build): si legge in fondo a Dati
-const VERSIONE_APP = '27/10/2026 05:50';
+const VERSIONE_APP = '05/11/2026 22:30';
 
 /* ============================== 1. CONFIG ============================== */
 const CONFIG = {
-  // Zone d'intensità: codice italiano (A1…C2) ↔ zona Z1–Z5 (C1 e C2 formano Z5)
-  // ↔ zone di Maglischo (Swimming Fastest): REC e En-1…Sp-3 stanno dentro le sei zone,
-  //   Sp-2 e Sp-3 insieme in C2. Nelle serie si può scrivere sia «B1» sia «En-2».
+  // Zone d'intensità: codice dell'app (A1…C2) ↔ zona ammessa nei documenti (mag: En-1…Sp-2)
+  // ↔ modello TID a 3 zone (tid: Z1, Z2, Z3) ↔ livelli di Rushton. Equivalenze del coach (05/11/2026).
+  // Nelle serie si può scrivere sia «B1» sia «En-2»; «En-1» va in A1, «En-1 alta» in A2, «Sp-3» in C2.
   zone: [
-    { key: 'A1', z: 'Z1', mag: 'REC', nome: 'Aerobico leggero', magNome: 'Recupero',
-      guida: 'Nuoto facile, recupero e defaticamento · lattato sotto 2 mmol/L' },
-    { key: 'A2', z: 'Z2', mag: 'En-1', nome: 'Aerobico medio', magNome: 'Resistenza di base',
-      guida: 'Sotto la soglia · lattato 1–3 mmol/L · recuperi brevi (5–30″) · serie lunghe' },
-    { key: 'B1', z: 'Z3', mag: 'En-2', nome: 'Soglia anaerobica', magNome: 'Resistenza alla soglia',
-      guida: 'Alla soglia individuale · lattato ~3–5 mmol/L · recuperi 10–30″ · serie 2000–4000 m' },
-    { key: 'B2', z: 'Z4', mag: 'En-3', nome: 'Massimo consumo di O₂', magNome: 'Resistenza in sovraccarico',
+    { key: 'A1', mag: 'En-1', tid: 'Z1', rushton: '1a-1b', nome: 'Aerobico leggero', magNome: 'Resistenza di base',
+      guida: 'FC 120–150 bpm · lattato 1–3 mmol/L (Maglischo) · recuperi brevi (5–30″) · serie lunghe' },
+    { key: 'A2', mag: 'En-1 alta', tid: 'Z1', rushton: '1b', nome: 'Aerobico medio', magNome: 'Resistenza di base, parte alta',
+      guida: '«Soglia bassa» nella tabella FIN; nella pratica ≈ 25 battiti in 10″ (≈ 150 bpm, bordo alto di En-1) · Z1 per scelta del coach (05/11/2026)' },
+    { key: 'B1', mag: 'En-2', tid: 'Z2', rushton: '2-3', nome: 'Soglia anaerobica', magNome: 'Resistenza alla soglia',
+      guida: 'Alla soglia individuale · lattato ~3–5 mmol/L · recuperi 10–30″ · serie 2000–4000 m · è la zona del limite En-2 ≤ 30–40 % del volume' },
+    { key: 'B2', mag: 'En-3', tid: 'Z3', tidNota: 'bassa', rushton: '4', nome: 'Massimo consumo di O₂', magNome: 'Resistenza in sovraccarico',
       guida: 'Sopra la soglia, verso il VO₂max · lattato ~6–10 mmol/L · recuperi 30″–2′ · serie 1200–2000 m' },
-    { key: 'C1', z: 'Z5', mag: 'Sp-1', nome: 'Tolleranza lattacida', magNome: 'Tolleranza al lattato',
+    { key: 'C1', mag: 'Sp-1', tid: 'Z3', tidNota: 'alta', rushton: '5a', nome: 'Tolleranza lattacida', magNome: 'Tolleranza al lattato',
       guida: 'Ritmo gara o più veloce con acidosi alta · recuperi brevi o incompleti · serie 300–1000 m' },
-    { key: 'C2', z: 'Z5', mag: 'Sp-2/3', nome: 'Potenza lattacida', magNome: 'Produzione di lattato · Potenza',
-      guida: 'Sp-2: 25–75 m quasi al massimo, recuperi lunghi (1:3–1:5), serie 300–600 m · Sp-3: sprint 10–25 m, recupero completo, serie 100–300 m' },
+    { key: 'C2', mag: 'Sp-2', tid: 'Z3', tidNota: 'alta', rushton: '5c', nome: 'Potenza lattacida', magNome: 'Produzione di lattato',
+      guida: '25–75 m quasi al massimo, recuperi lunghi (1:3–1:5), serie 300–600 m · nell\'app contiene anche il lavoro «Sp-3»' },
   ],
+  // zone dei documenti senza una zona propria nell'app
+  zoneFuori: [
+    { mag: 'TEC', nome: 'Drill, esercizi, tecnica', tid: 'Z1', rushton: '—', guida: 'Zona tecnica: metri di drill separati, quota 10–15 % (regole §3.7.6); nell\'app stanno dentro A1/A2' },
+    { mag: 'Sp-3', nome: 'Partenze, 10–12,5 m, sprint di potenza', tid: 'NC', rushton: '6', guida: 'Non classificata nel modello a 3 zone; assente nell\'app: scritta nelle serie va in C2' },
+    { mag: 'RP', nome: 'Ritmo gara', tid: 'NC', rushton: '—', guida: 'Non classificata: tra Z2 e Z3, senza equivalente diretto' },
+  ],
+  // modello a 3 zone (TID) e limite della zona En-2 (B1) sul volume
+  tid: [
+    { k: 'Z1', zone: ['A1', 'A2'], nome: 'bassa intensità', colore: '--z-A1' },
+    { k: 'Z2', zone: ['B1'], nome: 'soglia', colore: '--z-B1' },
+    { k: 'Z3', zone: ['B2', 'C1', 'C2'], nome: 'alta intensità', colore: '--z-C1' },
+  ],
+  limiteEn2: [30, 40],
   tipi: [
     { key: 'acqua', nome: 'Acqua' },
     { key: 'secco', nome: 'Secco' },
@@ -1330,6 +1370,25 @@ function caricaPrefs() {
 /* ============================== 4. CALCOLI ============================== */
 // «B1 · En-2»: codice italiano e nome di Maglischo
 const etZ = z => `${z.key} · ${z.mag}`;
+// Distribuzione a 3 zone (TID) da metri o percentuali per zona: { Z1, Z2, Z3 } in percentuale (null se vuota)
+function tidDa(zone) {
+  if (!zone) return null;
+  const v = Object.fromEntries(CONFIG.tid.map(t => [t.k, t.zone.reduce((x, k) => x + (Number(zone[k]) || 0), 0)]));
+  const tot = v.Z1 + v.Z2 + v.Z3;
+  return tot > 0 ? { Z1: (v.Z1 / tot) * 100, Z2: (v.Z2 / tot) * 100, Z3: (v.Z3 / tot) * 100 } : null;
+}
+// forma della distribuzione: piramidale (Z1 > Z2 > Z3), polarizzata (Z1 > Z3 > Z2), sulla soglia, alta intensità
+function modelloTid(t) {
+  if (!t) return '';
+  if (t.Z1 >= t.Z2 && t.Z1 >= t.Z3) return t.Z3 > t.Z2 ? 'polarizzata' : 'piramidale';
+  return t.Z2 >= t.Z3 ? 'sulla soglia' : 'alta intensità';
+}
+// quota En-2 (B1 = Z2) rispetto al limite 30–40 % del volume: ok, al limite, oltre
+function statoEn2(p) {
+  if (p == null) return null;
+  const [a, b] = CONFIG.limiteEn2;
+  return p <= a ? { cl: 'stabile', t: `entro il ${a} %`, breve: `≤ ${a} %` } : p <= b ? { cl: 'rialzo', t: `al limite (${a}–${b} %)`, breve: `${a}–${b} %` } : { cl: 'alta', t: `oltre il ${b} %`, breve: `> ${b} %` };
+}
 const zeriZone = () => Object.fromEntries(CONFIG.zone.map(z => [z.key, 0]));
 const uaSeduta = s => (s.rpe != null && s.durata ? s.rpe * s.durata : null);   // sRPE (Foster)
 const sommaZone = zone => CONFIG.zone.reduce((t, z) => t + (zone?.[z.key] || 0), 0);
@@ -1432,7 +1491,16 @@ function totaliAllenamento(al) {
 const uaPrevista = al => (al.durata && al.rpeTarget != null ? al.durata * al.rpeTarget : null);
 // A chi va un allenamento: tutta la squadra (nessun elenco) o solo gli atleti scelti (al.atleti)
 const perTutti = al => !(Array.isArray(al?.atleti) && al.atleti.length);
-const riceve = (al, a) => perTutti(al) || al.atleti.includes(a);
+const riceveLista = (al, a) => perTutti(al) || al.atleti.includes(a);
+// Più allenamenti in acqua nello stesso giorno e nella stessa mezza giornata sono alternativi (gruppi di lavoro):
+// ogni presente ne fa uno solo. Fa quello del suo gruppo; se nessun gruppo lo nomina, il primo «per tutta la
+// squadra»; altrimenti nessuno. Il lavoro a secco si somma sempre.
+const alternativi = al => (!al?.data || al.tipo === 'secco' ? [] : DB.allenamenti.filter(x => x.data === al.data && x.tipo !== 'secco' && (x.fascia || '') === (al.fascia || '')));
+const allenamentoDelGruppo = (alts, a) => alts.find(x => !perTutti(x) && x.atleti.includes(a)) || alts.find(perTutti) || null;
+function riceve(al, a) {
+  const alts = alternativi(al);
+  return alts.length < 2 || !alts.includes(al) ? riceveLista(al, a) : allenamentoDelGruppo(alts, a) === al;
+}
 const destinatariTesto = (al, max = 4) => perTutti(al) ? 'Tutta la squadra'
   : `${al.atleti.length} ${al.atleti.length === 1 ? 'atleta' : 'atleti'}: ${al.atleti.slice(0, max).join(', ')}${al.atleti.length > max ? ` e altri ${al.atleti.length - max}` : ''}`;
 // rosa attuale (con memoria: serve molte volte nello stesso disegno della pagina)
@@ -1444,8 +1512,9 @@ function rosaAttuale() {
 }
 // quota della rosa che riceve l'allenamento: i metri «della squadra» sono la media per atleta
 function quotaRosa(al) {
-  if (perTutti(al)) return 1;
   const r = rosaAttuale();
+  if (alternativi(al).length > 1) return r.size ? [...r].filter(a => riceve(al, a)).length / r.size : 1;
+  if (perTutti(al)) return 1;
   return r.size ? al.atleti.filter(a => r.has(a)).length / r.size : 1;
 }
 const titoloAllenamento = al => [al.fascia, nomeTipoKey(al.tipo), al.tipologia].filter(Boolean).join(' · ');
@@ -1485,6 +1554,8 @@ function schedaAllenamento(al) {
 function sincronizzaSedute(data) {
   const presenti = new Set(DB.presenze[data] || []);
   const ids = new Set();
+  // RPE già dichiarate quel giorno: se un atleta passa all'allenamento dell'altro gruppo, la sua RPE lo segue
+  const dichiarate = new Map(DB.sedute.filter(s => s.data === data && s.allenamentoId && !s.rpeStimata && s.rpe != null).map(s => [`${s.allenamentoId}|${s.atleta}`, s.rpe]));
   for (const al of DB.allenamenti.filter(a => a.data === data)) {
     ids.add(al.id);
     const t = totaliAllenamento(al);
@@ -1494,7 +1565,8 @@ function sincronizzaSedute(data) {
       if (!riceve(al, a)) continue;   // allenamento di un altro gruppo
       const base = { data, atleta: a, tipo: al.tipo, durata: al.durata || null, metri: t.metri, zone: { ...t.zone }, attrezzi: [...(al.attrezzi || [])], note: titoloAllenamento(al), allenamentoId: al.id };
       const s = esistenti.get(a);
-      if (!s) DB.sedute.push({ id: uid(), rpe: al.rpeTarget ?? null, rpeStimata: true, ...base });
+      const daAltro = s ? undefined : alternativi(al).filter(x => x !== al).map(x => dichiarate.get(`${x.id}|${a}`)).find(v => v != null);
+      if (!s) DB.sedute.push({ id: uid(), ...(daAltro != null ? { rpe: daAltro, rpeStimata: false } : { rpe: al.rpeTarget ?? null, rpeStimata: true }), ...base });
       else { Object.assign(s, base); if (s.rpeStimata) s.rpe = al.rpeTarget ?? null; }
     }
   }
@@ -2026,12 +2098,15 @@ const SQUADRA = { atleti: [], presenze: {}, rimuovi: [], rinomina: [] };
 const VOCABOLARIO = {
   stile: { SL: ['sl', 'st', 'crawl', 'libero'], DO: ['do', 'dorso', 'bk'], RA: ['ra', 'rana', 'br'], FA: ['fa', 'df', 'delfino', 'farfalla', 'fly'], MI: ['mi', 'mx', 'misti', 'misto', 'im'], 'A scelta': ['scelta'] },
   // zone: codice italiano, nome di Maglischo (En-1…Sp-3; REC solo in maiuscolo, vedi leggiRiga) e qualche parola
-  zona: { A1: ['a1', 'aerobico'], A2: ['a2', 'en-1'], B1: ['b1', 'en-2', 'soglia'], B2: ['b2', 'en-3', 'vo2', 'vo2max'], C1: ['c1', 'sp-1', 'lattacido', 'tolleranza'], C2: ['c2', 'sp-2', 'sp-3', 'sp', 'sprint', 'potenza'] },
+  // (equivalenze del coach: En-1 = A1, «En-1 alta» = A2, Sp-3 dentro C2)
+  zona: { A1: ['a1', 'aerobico', 'en-1'], A2: ['a2', 'en-1a'], B1: ['b1', 'en-2', 'soglia'], B2: ['b2', 'en-3', 'vo2', 'vo2max'], C1: ['c1', 'sp-1', 'lattacido', 'tolleranza'], C2: ['c2', 'sp-2', 'sp-3', 'sp', 'sprint', 'potenza'] },
   parte: { Attivazione: ['att', 'attivazione'], Riscaldamento: ['wu', 'risc', 'riscaldamento'], Tecnica: ['tec', 'tecnica'], 'Parte centrale': ['main', 'centrale', 'pc'], 'Serie secondaria': ['sec', 'secondaria', 'comp', 'compl', 'complemento'], 'Velocità': ['vel', 'velocita', 'velocità'], Defaticamento: ['def', 'defat', 'defaticamento'] },
   mezzi: { pinne: ['pinne'], monopinna: ['monopinna', 'mono'], snorkel: ['snorkel'], palette: ['palette'], pull: ['pull', 'pullbuoy', 'pull-buoy'], tavoletta: ['tavoletta', 'tavola'], elastico: ['elastico'], paracadute: ['paracadute'], gambe: ['gambe'], braccia: ['braccia'], scull: ['scull', 'sculling'] },
 };
 // parole di recupero: la riga va in A1 ma non cambia la zona delle righe sotto («200 sciolti» tra due serie in B1)
 const PAROLE_RECUPERO = new Set(['sciolti', 'sciolto', 'sciolta', 'sciolte', 'facile', 'facili', 'easy', 'rilassato', 'rilassata', 'rilassati', 'scioglimento', 'defaticante']);
+// TEC e drill (zona tecnica dei documenti): la riga va in A1, come le parole di recupero
+const PAROLE_TECNICA = new Set(['tec', 'drill', 'drills']);
 const PAROLE = new Map();
 for (const [campo, voci] of Object.entries(VOCABOLARIO)) for (const [valore, sinonimi] of Object.entries(voci)) for (const w of sinonimi) PAROLE.set(w, { campo, valore });
 const parteDa = t => { const w = String(t || '').toLowerCase().replace(/[:.]+$/, '').trim(); const p = CONFIG.parti.find(x => x.toLowerCase() === w); if (p) return p; const v = PAROLE.get(w); return v?.campo === 'parte' ? v.valore : null; };
@@ -2039,9 +2114,10 @@ const metriDi = s => (s.giri || 1) * (s.rip || 1) * (s.dist || 0);
 const RE_PARTENZA = /(?:\bp\.?\s*(\d{1,2}[:'’.]\d{2})|(?<![\d.:])(\d{1,2}[:'’]\d{2})(?![\d.]))"?/i;
 
 // "1.500" → 1500 (punto delle migliaia), × e * → x
-// "En 2", "EN2", "sp.1" → "En-2", "sp-1" (zone di Maglischo)
+// "En 2", "EN2", "sp.1" → "En-2", "sp-1" (zone di Maglischo); "En-1 alta", "En-1 (alta)" → "En-1a" (A2)
 const normalizza = r => String(r ?? '').trim().replace(/(\d)\.(\d{3})(?!\d)/g, '$1$2').replace(/[×*]/g, 'x')
-  .replace(/(?<![\w-])(en|sp)\s?[-‐–.]?\s?([123])(?![\w]|[:'’.]\d)/gi, '$1-$2');
+  .replace(/(?<![\w-])(en|sp)\s?[-‐–.]?\s?([123])(?![\w]|[:'’.]\d)/gi, '$1-$2')
+  .replace(/(?<![\w-])(en)-1\s*\(?\s*(?:alta|alto|alti|alte)\b(?:\s*\))?/gi, '$1-1a');
 // Divide sui "+" fuori dalle parentesi
 function spezzaPiu(t) {
   const out = []; let d = 0, cur = '';
@@ -2114,6 +2190,7 @@ function leggiRiga(riga, predef = {}) {
     d = Math.max(0, d + apre - chiude);
     if (v?.campo === 'stile' && !stile) { stile = v.valore; continue; }
     if (v?.campo === 'zona' && !zona) { zona = v.valore; continue; }
+    if (d === 0 && PAROLE_TECNICA.has(pulita)) recupero = true;   // TEC, drill: zona tecnica, nell'app in A1
     if (v?.campo === 'parte' && !parte && !nota.length) { parte = v.valore; continue; }
     if (v?.campo === 'mezzi') { if (!mezzi.includes(v.valore)) mezzi.push(v.valore); continue; }
     if (d === 0 && PAROLE_RECUPERO.has(pulita)) recupero = true;
@@ -2623,6 +2700,20 @@ function barraZone(percZone, mini = false) {
   }).join('')}</div>`;
 }
 const legendaZone = () => legendaHTML(CONFIG.zone.map(z => ({ label: etZ(z), colore: `--z-${z.key}` })));
+// Modello a 3 zone (TID): una riga per distribuzione (piano, svolto…), con la forma e il limite della zona En-2
+function tabellaTid(righe) {
+  const valide = righe.map(r => ({ ...r, t: tidDa(r.zone) })).filter(r => r.t);
+  if (!valide.length) return '';
+  const zoneTid = t => (t.zone.length > 1 ? `${t.zone[0]}–${t.zone[t.zone.length - 1]}` : t.zone[0]);
+  const intest = CONFIG.tid.map(t => `<th class="num"><span class="th-in"><i class="sw" style="background:var(${t.colore})"></i>${t.k}</span><br><small>${zoneTid(t)}</small></th>`).join('');
+  const corpo = valide.map(r => {
+    const st = statoEn2(r.t.Z2);
+    return `<tr><td>${esc(r.etichetta)}</td>${CONFIG.tid.map(t => `<td class="num">${num(r.t[t.k], 0)} %</td>`).join('')}<td class="tid-forma">${modelloTid(r.t)}<br><span class="stato ${st.cl}" title="Zona En-2 (B1): ${num(r.t.Z2, 0)} % del volume, ${st.t}">En-2 ${st.breve}</span></td></tr>`;
+  }).join('');
+  return `<div class="tid-box"><h4 class="etichetta">Modello a 3 zone (TID)</h4>
+    <div class="tbl-wrap"><table class="ztab tid-tab"><thead><tr><th><span class="vh">Distribuzione</span></th>${intest}<th>Forma · limite En-2</th></tr></thead><tbody>${corpo}</tbody></table></div>
+    <p class="nota-piccola">Z1 = A1–A2 (En-1, con la tecnica) · Z2 = B1 (En-2: limite ${CONFIG.limiteEn2.join('–')} % del volume) · Z3 = B2–C2 (En-3, Sp-1, Sp-2). Sp-3 e ritmo gara non sono classificati nel modello: l'Sp-3 scritto nelle serie sta in C2 e quindi qui conta in Z3.</p></div>`;
+}
 
 function ridisegnaGrafici() {
   for (const g of REGISTRO_GRAFICI) {
@@ -2807,6 +2898,7 @@ function vistaAtleta(M) {
         <div class="zrighe"><div class="zriga"><span>Pianificata</span>${barraZone(pianificata)}</div><div class="zriga"><span>Effettiva</span>${barraZone(effettiva.tot ? effettiva.perc : null)}</div></div>
         <div style="margin-top:12px">${legendaZone()}</div>
         <div class="tbl-wrap"><table class="ztab"><thead><tr><th>Zona</th><th>Tipo di lavoro</th><th class="num">Pian.</th><th class="num">Eff.</th><th class="num">Δ punti</th></tr></thead><tbody>${zTab}</tbody></table></div>
+        ${tabellaTid([{ etichetta: 'Pianificata', zone: pianificata }, { etichetta: 'Effettiva', zone: effettiva.tot ? effettiva.perc : null }])}
       </section>
     </div>
     <div class="griglia-2">
@@ -2913,6 +3005,8 @@ function vistaPeriodizzazione(M) {
       <div class="zrighe" style="margin-block:6px 16px"><div class="zriga"><span>Pianificata</span>${barraZone(piaTot)}</div><div class="zriga"><span>Effettiva</span>${barraZone(effTot.tot ? effTot.perc : null)}</div></div>
       <div class="griglia-2"><div><h4 class="etichetta" style="margin:0 0 6px">Pianificata per microciclo</h4><div class="grafico" id="gZp"></div></div>
       <div><h4 class="etichetta" style="margin:0 0 6px">Effettiva per microciclo</h4><div class="grafico" id="gZe"></div></div></div>
+      ${tabellaTid([{ etichetta: 'Pianificata', zone: piaTot }, { etichetta: 'Effettiva', zone: effTot.tot ? effTot.perc : null }])}
+      ${guidaZone()}
     </section>
     ${editor}`;
 
@@ -3383,7 +3477,7 @@ const SEGNAPOSTO_SERIE = {
   'Velocità': 'es. 8x25 SL C2 partenza dal blocco',
   Defaticamento: 'es. 200 SL A1 sciolto',
 };
-const AIUTO_TESTO = 'Una parte per intestazione (Riscaldamento:, Parte centrale:, Defaticamento:…), poi una serie per riga: 400 SL A1 · 8x50 DO A2 pinne · 3x(5x200) SL B1 p2:50. Una riga che inizia con «ripartenze:» va nei tempi di ripartenza. Parole riconosciute: SL DO RA FA MI; A1 A2 B1 B2 C1 C2 oppure le zone di Maglischo REC, En-1, En-2, En-3, Sp-1, Sp-2, Sp-3 (anche soglia, sprint); pinne, palette, pull, snorkel, gambe, braccia, elastico. Le altre parole restano come nota. Senza stile la riga è SL. Senza zona: «sciolti» o «facile» = A1, altrimenti la zona della riga sopra; le prime righe prendono la zona tipica della parte (riscaldamento, tecnica e defaticamento A1, parte centrale e secondaria A2, velocità C2).';
+const AIUTO_TESTO = 'Una parte per intestazione (Riscaldamento:, Parte centrale:, Defaticamento:…), poi una serie per riga: 400 SL A1 · 8x50 DO A2 pinne · 3x(5x200) SL B1 p2:50. Una riga che inizia con «ripartenze:» va nei tempi di ripartenza. Parole riconosciute: SL DO RA FA MI; A1 A2 B1 B2 C1 C2 oppure le zone dei documenti En-1 (A1), En-1 alta (A2), En-2, En-3, Sp-1, Sp-2, Sp-3 (in C2) (anche soglia, sprint); pinne, palette, pull, snorkel, gambe, braccia, elastico. Le altre parole restano come nota. Senza stile la riga è SL. Senza zona: «sciolti» o «facile» = A1, altrimenti la zona della riga sopra; le prime righe prendono la zona tipica della parte (riscaldamento, tecnica e defaticamento A1, parte centrale e secondaria A2, velocità C2).';
 
 function nuovaBozza(data, modello) {
   if (modello) {
@@ -3500,8 +3594,9 @@ function vistaGiornata() {
   const carte = allen.filter(al => !UI.bozza || UI.bozza.id !== al.id).map(al => cartaAllenamento(al, pres, atleti)).join('');
   const sez2 = `<section class="card" id="secAllenamento">
     <div class="card-head"><div><h3><span class="passo">2</span> Allenamento del giorno</h3>
-      <p>Scrivi la seduta come la daresti agli atleti: metri, zone e stili si calcolano dalle serie. Più gruppi? Un allenamento per gruppo, ciascuno con i suoi atleti: ogni presente riceve solo la sua seduta. Le RPE dei singoli si aggiungono sotto.</p></div>
+      <p>Scrivi la seduta come la daresti agli atleti: metri, zone e stili si calcolano dalle serie. Più gruppi? Un allenamento per gruppo: nella stessa mezza giornata ogni presente ne fa uno solo, quello del suo gruppo. Le RPE dei singoli si aggiungono sotto.</p></div>
       ${UI.bozza ? '' : '<div class="azioni"><button type="button" class="btn primario" data-action="a-nuovo">Nuovo allenamento</button></div>'}</div>
+    ${UI.bozza ? '' : gruppiDelGiorno(data, atleti, pres)}
     ${carte}
     ${UI.bozza ? editorAllenamento(UI.bozza) : (allen.length ? mixHTML(data, null, true) : '<p class="vuoto">Nessun allenamento registrato per questa data.</p>')}
   </section>`;
@@ -3618,7 +3713,8 @@ function cartaAllenamento(al, pres, atleti) {
       <button type="button" class="btn piccolo" data-action="a-modifica" data-id="${al.id}">Modifica</button>
       <button type="button" class="btn piccolo" data-action="a-duplica" data-id="${al.id}">Duplica</button>
       <button type="button" class="btn-x" data-action="a-elimina" data-id="${al.id}" aria-label="Elimina allenamento">✕</button></div></div>
-    ${perTutti(al) ? '' : `<p class="dest-chip" title="${esc(al.atleti.join(', '))}"><b>Per</b> ${esc(destinatariTesto(al, 6))}</p>`}
+    ${alternativi(al).length > 1 ? `<p class="dest-chip" title="${esc(atleti.filter(a => riceve(al, a)).join(', '))}"><b>Gruppo ${letteraGruppo(al)}</b> · ${num(atleti.filter(a => riceve(al, a)).length)} atleti${perTutti(al) ? ' (chi non è in un altro gruppo)' : ''}</p>`
+      : perTutti(al) ? '' : `<p class="dest-chip" title="${esc(al.atleti.join(', '))}"><b>Per</b> ${esc(destinatariTesto(al, 6))}</p>`}
     <div class="al-num">
       ${al.tipo !== 'secco' ? `<span><b>${num(t.metri)}</b> m</span>` : ''}
       <span><b>${al.durata ? num(al.durata) : '—'}</b> min</span>
@@ -3634,6 +3730,59 @@ function cartaAllenamento(al, pres, atleti) {
       <div class="atl-top"><label class="f-riga" style="font-size:14px;color:var(--ink-2)">Uguale per tutti <select data-rpe-tutti="${al.id}" style="width:150px">${opt('', '', 'Scegli')}${RPE_SCALA.map((x, i) => opt(i, '', x)).join('')}</select></label></div>
       <div class="rpe-griglia">${griglia}</div></details>` : `<p class="nota-piccola">${perTutti(al) ? 'Nessun presente: fai l\'appello per assegnare la seduta agli atleti.' : 'Nessuno degli atleti scelti è presente: segnali nell\'appello.'}</p>`}
   </article>`;
+}
+
+/* ---- Gruppi di lavoro: più allenamenti nella stessa mezza giornata, ognuno fa il suo ---- */
+const letteraGruppo = al => String.fromCharCode(65 + Math.max(0, alternativi(al).indexOf(al)));
+// mezze giornate del giorno con due o più allenamenti in acqua
+const fasceConGruppi = data => [...new Set(DB.allenamenti.filter(a => a.data === data && a.tipo !== 'secco').map(a => a.fascia || ''))]
+  .map(f => DB.allenamenti.find(a => a.data === data && a.tipo !== 'secco' && (a.fascia || '') === f)).map(alternativi).filter(l => l.length > 1);
+// i gruppi dell'ultima volta (giorno precedente con gli stessi allenamenti divisi per atleti): atleta → posizione
+function gruppiPrecedenti(data, n) {
+  const giorni = [...new Set(DB.allenamenti.filter(a => a.data < data).map(a => a.data))].sort().reverse();
+  for (const d of giorni) for (const alts of fasceConGruppi(d)) {
+    if (alts.some(perTutti) || alts.length < Math.min(n, 2)) continue;
+    const m = {}; alts.forEach((al, i) => { if (i < n) for (const a of al.atleti) m[a] = i; });
+    return { data: d, m };
+  }
+  return null;
+}
+function gruppiDelGiorno(data, atleti, pres) {
+  return fasceConGruppi(data).map(alts => {
+    const k = `${data}|${alts[0].fascia || ''}`, B = UI.gruppiBozza?.k === k ? UI.gruppiBozza : null;
+    const nTutti = alts.filter(perTutti).length;
+    const scelta = a => (B ? B.m[a] ?? -1 : alts.indexOf(allenamentoDelGruppo(alts, a)));
+    const ordine = [...atleti.filter(a => pres.has(a)), ...atleti.filter(a => !pres.has(a))];
+    const prec = gruppiPrecedenti(data, alts.length);
+    const testa = alts.map((al, i) => `<th class="num" scope="col" title="${esc(titoloAllenamento(al))}"><b>${String.fromCharCode(65 + i)}</b><br><small>${al.tipologia ? esc(al.tipologia) : num(totaliAllenamento(al).metri) + ' m'}</small></th>`).join('');
+    const righe = ordine.map((a, r) => `<tr class="${pres.has(a) ? '' : 'gr-assente'}"><th scope="row">${esc(a)}${pres.has(a) ? '' : ' <small class="muto">assente</small>'}</th>
+      ${alts.map((al, i) => `<td class="num"><input type="radio" name="grp-${r}" class="gr-scelta" data-a="${esc(a)}" value="${i}" ${scelta(a) === i ? 'checked' : ''} aria-label="${esc(a)}: gruppo ${String.fromCharCode(65 + i)}"></td>`).join('')}
+      <td class="num"><input type="radio" name="grp-${r}" class="gr-scelta" data-a="${esc(a)}" value="-1" ${scelta(a) === -1 ? 'checked' : ''} aria-label="${esc(a)}: nessuno"></td></tr>`).join('');
+    const conti = alts.map((al, i) => `${String.fromCharCode(65 + i)} ${atleti.filter(a => pres.has(a) && scelta(a) === i).length}`).join(' · ');
+    return `<details class="gruppi-giorno${nTutti > 1 ? ' da-fare' : ''}" ${nTutti > 1 || B ? 'open' : ''} data-gruppi="${esc(k)}">
+      <summary><b>Gruppi di lavoro</b> · ${alts.length} allenamenti ${alts[0].fascia ? 'al ' + esc(alts[0].fascia.toLowerCase()) : ''} · presenti per gruppo: ${conti}</summary>
+      ${nTutti > 1 ? `<p class="nota-piccola avviso-gruppi">${nTutti} allenamenti sono scritti «per tutta la squadra», ma ogni atleta ne fa uno solo: indica chi fa quale. Finché non lo fai, contano tutti nel gruppo A.</p>` : ''}
+      <p class="nota-piccola" style="margin-top:0">Ogni atleta fa un solo allenamento: quello del suo gruppo. I gruppi finiscono nel foglio (colonna «Gruppo») e le schede degli atleti contano solo l'allenamento fatto.</p>
+      <div class="tbl-wrap"><table class="tab-gruppi"><thead><tr><th scope="col">Atleta</th>${testa}<th class="num" scope="col"><small>nessuno</small></th></tr></thead><tbody>${righe}</tbody></table></div>
+      <div class="azioni"><button type="button" class="btn primario" data-action="g-gruppi-salva" data-k="${esc(k)}">Salva i gruppi</button>
+        ${prec ? `<button type="button" class="btn" data-action="g-gruppi-come" data-k="${esc(k)}" data-d="${prec.data}">Come il ${fmtGiorno(prec.data)}</button>` : ''}</div>
+    </details>`;
+  }).join('');
+}
+function salvaGruppi(k) {
+  const [data, fascia] = k.split('|');
+  const alts = fasceConGruppi(data).find(l => (l[0].fascia || '') === fascia); if (!alts) return;
+  const box = $(`details[data-gruppi="${CSS.escape(k)}"]`), rosa = elencoAtleti();
+  const scelte = new Map($$('.gr-scelta:checked', box).map(x => [x.dataset.a, Number(x.value)]));
+  const vuoti = [];
+  alts.forEach((al, i) => {
+    const l = rosa.filter(a => scelte.get(a) === i);
+    if (l.length) al.atleti = l; else { delete al.atleti; vuoti.push(String.fromCharCode(65 + i)); }
+  });
+  UI.gruppiBozza = null;
+  sincronizzaSedute(data); salva(); render();
+  const pres = new Set(DB.presenze[data] || []);
+  avviso(`Gruppi salvati: ${alts.map((al, i) => `${String.fromCharCode(65 + i)} ${rosa.filter(a => pres.has(a) && riceve(al, a)).length}`).join(' · ')} presenti${vuoti.length ? ` · ${vuoti.join(', ')} senza atleti: vale per chi non è in un altro gruppo` : ''}`);
 }
 
 function editorAllenamento(bz) {
@@ -3705,12 +3854,14 @@ function destinatariHTML(bz) {
   </fieldset>`;
 }
 
-// Promemoria delle zone: codice italiano, Maglischo e indicazioni (valori indicativi)
-function guidaZone() {
-  const righe = CONFIG.zone.map(z => `<tr><td><span class="th-in"><i class="sw" style="background:var(--z-${z.key})"></i><b>${z.key}</b></span></td><td><b>${esc(z.mag)}</b></td><td>${esc(z.nome)}<br><span class="nota-piccola">${esc(z.magNome)}</span></td><td class="guida-txt">${esc(z.guida)}</td></tr>`).join('');
-  return `<details class="guida-zone"><summary>Zone: A1–C2 e Maglischo</summary>
-    <div class="tbl-wrap"><table class="ztab guida"><thead><tr><th>Zona</th><th>Maglischo</th><th>Nome</th><th>Indicazioni</th></tr></thead><tbody>${righe}</tbody></table></div>
-    <p class="nota-piccola">Nelle serie puoi scrivere «B1» oppure «En-2»: l'app mette i metri nella stessa zona. Una riga senza zona prende quella della riga sopra (o quella tipica della parte: ${Object.entries(CONFIG.zonaParte).map(([p, z]) => `${p.toLowerCase()} ${z}`).join(', ')}); «sciolti», «facile» = A1. Una riga con la sola zona («tutto B1») vale per le righe sotto. REC va scritto in maiuscolo («rec 20″» resta il recupero). Valori indicativi da E. Maglischo, <i>Swimming Fastest</i>.</p></details>`;
+// Equivalenze delle zone: zona dell'app, zona ammessa nei documenti, modello a 3 zone (TID), Rushton, indicazioni
+function guidaZone(aperta = false) {
+  const tid = z => `${z.tid}${z.tidNota ? ` <small>(${z.tidNota})</small>` : ''}`;
+  const righe = CONFIG.zone.map(z => `<tr><td><span class="th-in"><i class="sw" style="background:var(--z-${z.key})"></i><b>${z.key}</b></span></td><td>${esc(z.nome)}</td><td><b>${esc(z.mag)}</b></td><td>${tid(z)}</td><td>${esc(z.rushton)}</td><td class="guida-txt">${esc(z.guida)}</td></tr>`).join('');
+  const fuori = CONFIG.zoneFuori.map(z => `<tr class="z-fuori"><td><span class="muto">—</span></td><td>${esc(z.nome)}</td><td><b>${esc(z.mag)}</b></td><td>${z.tid === 'NC' ? 'non classificata' : esc(z.tid)}</td><td>${esc(z.rushton)}</td><td class="guida-txt">${esc(z.guida)}</td></tr>`).join('');
+  return `<details class="guida-zone"${aperta ? ' open' : ''}><summary>Zone: equivalenze (app, documenti, 3 zone, Rushton)</summary>
+    <div class="tbl-wrap"><table class="ztab guida"><thead><tr><th>App</th><th>Nome nell'app</th><th>Zona dei documenti</th><th>TID 3 zone</th><th>Rushton</th><th>Note</th></tr></thead><tbody>${righe}${fuori}</tbody></table></div>
+    <p class="nota-piccola">Nelle serie puoi scrivere «B1» oppure «En-2»: l'app mette i metri nella stessa zona. «En-1» va in A1, «En-1 alta» in A2, «Sp-3» in C2; «TEC» e i drill stanno in A1/A2 (la parte Tecnica è A1). Una riga senza zona prende quella della riga sopra (o quella tipica della parte: ${Object.entries(CONFIG.zonaParte).map(([p, z]) => `${p.toLowerCase()} ${z}`).join(', ')}); «sciolti», «facile» = A1. Una riga con la sola zona («tutto B1») vale per le righe sotto. Modello a 3 zone: Z1 = A1–A2, Z2 = B1 (limite En-2 ${CONFIG.limiteEn2.join('–')} % del volume), Z3 = B2–C2.</p></details>`;
 }
 
 // Come il programma ha letto le righe: una voce per serie, le righe senza metri restano note.
@@ -3810,6 +3961,12 @@ function azioneGiornata(az, b) {
   const cambiaGiorno = g => { UI.giorno = g; UI.bozza = null; UI.bozzaChiusa = null; UI.modoTesto = false; UI.settimana = null; render(); };
   if (az === 'g-giorno') { cambiaGiorno(addDays(data, Number(b.dataset.delta))); return; }
   if (az === 'g-oggi') { cambiaGiorno(oggiStr()); return; }
+  if (az === 'g-gruppi-salva') { salvaGruppi(b.dataset.k); return; }
+  if (az === 'g-gruppi-come') {   // precompila con i gruppi di quel giorno: si salva con «Salva i gruppi»
+    const k = b.dataset.k, prec = gruppiPrecedenti(k.split('|')[0], 9);
+    if (prec) { UI.gruppiBozza = { k, m: prec.m }; render(); avviso(`Gruppi del ${fmtGiorno(prec.data)}: controlla e salva`); }
+    return;
+  }
   if (az === 'g-settimana') { UI.settimana = lunedi(data); UI.tab = 'settimana'; render(); window.scrollTo({ top: 0 }); return; }
   if (az === 'g-apri-gara') { UI.manifSel = b.dataset.id; UI.manifForm = null; UI.garaModifica = null; UI.ultimoGiornoGara = data; UI.tab = 'gare'; render(); $('#secGareIns')?.scrollIntoView({ block: 'start' }); return; }
   if (az.startsWith('g-pal')) { azionePalestra(az, b, data, atleti); return; }
@@ -3876,6 +4033,7 @@ function azioneGiornata(az, b) {
 
 function cambioGiornata(e) {
   const el = e.target;
+  if (el.classList?.contains('gr-scelta')) return true;
   if (el.id === 'gData') { const d = parseData(el.value); if (d) { UI.giorno = d; UI.bozza = null; UI.bozzaChiusa = null; UI.modoTesto = false; UI.settimana = null; render(); } return true; }
   if (el.dataset.motivo != null) {
     const d = UI.giorno; DB.motivi[d] = DB.motivi[d] || {};
@@ -4093,6 +4251,7 @@ function vistaSettimana() {
   const sez3 = `<section class="card">${cardHead('Zone rispetto al piano', 'zone', `Metri della settimana per zona${P ? `; il piano è diviso in multipli di ${CONFIG.passoZone} m che sommano esattamente al totale` : ''}.`)}
     ${righeZ ? `<div class="tbl-wrap"><table class="ztab"><thead><tr><th>Zona</th><th class="num">Svolto</th>${Pr.metri ? '<th class="num">Programmato</th>' : ''}<th class="num">Piano</th><th class="num">Manca</th><th class="num">%</th></tr></thead><tbody>${righeZ}</tbody>
       <tfoot><tr class="tot"><td>Totale</td><td class="num">${num(S.metri)}</td>${Pr.metri ? `<td class="num">${num(Pr.metri)}</td>` : ''}<td class="num">${P ? num(P.metri) : '—'}</td><td class="num">${P ? (manca > 0 ? num(manca) : manca < 0 ? `<span class="oltre">oltre di ${num(-manca)}</span>` : '✓') : '—'}</td><td class="num">${target ? num((S.metri / target) * 100) + ' %' : '—'}</td></tr></tfoot></table></div>` : '<p class="vuoto">Nessun metro e nessun piano per questa settimana.</p>'}
+    ${tabellaTid([{ etichetta: 'Svolto', zone: S.zone }, ...(Pr.metri ? [{ etichetta: 'Svolto + programmato', zone: Object.fromEntries(CONFIG.zone.map(z => [z.key, (S.zone[z.key] || 0) + (Pr.zone[z.key] || 0)])) }] : []), ...(P ? [{ etichetta: 'Piano', zone: P.zone }] : [])])}
     ${P?.resto ? `<p class="nota-piccola">I ${num(P.metri)} m del piano non si dividono in multipli di ${CONFIG.passoZone}: i ${P.resto} m che avanzano sono contati in ${P.zonaResto}.</p>` : ''}
   </section>`;
 
@@ -6271,12 +6430,13 @@ function tipoDaRiga(r, extra) {
 function atletiDaGruppo(testo, rosa) {
   const t = testoF(testo).trim();
   if (!t || /^tutt[ie]/i.test(t) || /^squadra/i.test(t)) return null;
-  const min = x => x.toLocaleLowerCase('it').replace(/\s+/g, ' ').trim();
+  const min = x => x.normalize('NFC').toLocaleLowerCase('it').replace(/\s+/g, ' ').trim();
   const trovati = [];
   for (const pezzo of t.split(/[,;\n]+/).map(min).filter(Boolean)) {
     let a = rosa.find(n => min(n) === pezzo);
     if (!a) { const c = rosa.filter(n => min(n).startsWith(pezzo)); if (c.length === 1) a = c[0]; }
     if (!a) { const c = rosa.filter(n => min(n).split(' ').includes(pezzo)); if (c.length === 1) a = c[0]; }
+    if (!a) a = atletaDaNome(pezzo, rosa);   // accenti e nomi scritti in un altro modo
     if (a && !trovati.includes(a)) trovati.push(a);
   }
   return trovati.length ? rosa.filter(n => trovati.includes(n)) : null;
@@ -6303,7 +6463,9 @@ function rigaInAl(r, extra, rosa = []) {
   const al = { id: String(r.id), data: r.Data, fascia: String(r.Fascia || '').trim() || 'Pomeriggio', tipo, tipologia: testoF(r.Tipologia).trim(),
     durata: numO(r['Durata (min)']), rpeTarget: numO(r['RPE previsto']), attrezzi: secco ? [] : [...(extra?.attrezzi || [])], note: testoF(r.Note).trim(), blocchi };
   if (extra?.stato) al.stato = extra.stato;
-  const atleti = 'Gruppo' in r ? atletiDaGruppo(r.Gruppo, rosa) : (Array.isArray(extra?.atleti) && extra.atleti.length ? [...extra.atleti] : null);
+  // gruppo: la colonna «Gruppo»; se è vuota (righe salvate prima che ci fosse) gli atleti salvati dall'app
+  const daApp = Array.isArray(extra?.atleti) && extra.atleti.length ? [...new Set(extra.atleti.map(n => (rosa.includes(n) ? n : atletaDaNome(n, rosa))).filter(Boolean))] : null;
+  const atleti = 'Gruppo' in r && testoF(r.Gruppo).trim() ? atletiDaGruppo(r.Gruppo, rosa) : daApp?.length ? daApp : null;
   if (atleti) al.atleti = atleti;
   return al;
 }
@@ -6319,7 +6481,7 @@ function foglioInDb(j) {
   for (const r of j.calendario || []) {
     if (!r.Data) continue;
     FOGLIO.righeCal.set(String(r.id), r);
-    d.allenamenti.push(rigaInAl(r, dati['al/' + r.id], d.atleti));
+    d.allenamenti.push(rigaInAl(r, dati['al/' + r.id], d.atleti.filter(a => !d.rimossi.includes(a))));
   }
   for (const [k, v] of Object.entries(dati)) {
     if (k.startsWith('sedute/')) d.sedute.push(...(v?.sedute || []));
